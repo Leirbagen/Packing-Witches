@@ -9,7 +9,6 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 {
     [SerializeField] private int sceneIndex = 2;
     [SerializeField] private NetworkPrefabRef _playerPrefab;
-    //[SerializeField] private NetworkPrefabRef captureZonePrefab;
     [SerializeField] private float sensibility = 200f;
     public string CurrentRoomCode { get; private set; }
 
