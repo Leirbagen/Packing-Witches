@@ -31,12 +31,13 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
             absoluteCameraLook.x += lookX;
             absoluteCameraLook.y -= lookY;
             absoluteCameraLook.y = Mathf.Clamp(absoluteCameraLook.y, -80f, 80f);
-
+            Debug.Log($"mouse=({lookX}, {lookY}) look={absoluteCameraLook}");
             if (InputController.Instance.GetButtonDown(InputController.Input.JUMP))
             {
                 _jumpPressed = true;
             }
         }
+        
     }
 
     void INetworkRunnerCallbacks.OnPlayerJoined(NetworkRunner runner, PlayerRef player)
