@@ -95,5 +95,6 @@ public class InputController : MonoBehaviour
         public const int MOUSE_Y = 3;
         public const int RUN = 4;
         public const int JUMP = 5;
+        public const int GRAB = 6;
     }
 }

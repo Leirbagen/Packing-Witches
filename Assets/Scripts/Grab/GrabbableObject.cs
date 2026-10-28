@@ -31,6 +31,7 @@ public class GrabbableObject : NetworkBehaviour
                 rb.isKinematic = false;
                 rb.useGravity = true;
             }
+            if (IsGrabbed) Debug.Log($"[Grab] 6. Siguiendo mano. holder={CurrentHolder}, hand={(CurrentHolder != null ? CurrentHolder.GetComponent<PlayerGrab>().handPoint : null)}");
         }
     }
 }

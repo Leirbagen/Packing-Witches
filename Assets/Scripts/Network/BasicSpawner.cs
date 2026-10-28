@@ -31,7 +31,6 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
             absoluteCameraLook.x += lookX;
             absoluteCameraLook.y -= lookY;
             absoluteCameraLook.y = Mathf.Clamp(absoluteCameraLook.y, -80f, 80f);
-            Debug.Log($"mouse=({lookX}, {lookY}) look={absoluteCameraLook}");
             if (InputController.Instance.GetButtonDown(InputController.Input.JUMP))
             {
                 _jumpPressed = true;
@@ -77,6 +76,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
         _jumpPressed = false;
 
         data.buttons.Set(InputButton.run, InputController.Instance.GetButton(InputController.Input.RUN));
+        data.buttons.Set(InputButton.grab, InputController.Instance.GetButton(InputController.Input.GRAB));
         input.Set(data);
     }
 
