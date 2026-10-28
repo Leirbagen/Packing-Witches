@@ -92,7 +92,8 @@ public class InputController : MonoBehaviour
         public const int MOVEMENT_Y = 0;
         public const int MOVEMENT_X = 1;
         public const int MOUSE_X = 2;
-        //public const int MOUSE_Y = 4;
-        //public const int JUMP = 2;
+        public const int MOUSE_Y = 3;
+        public const int RUN = 4;
+        public const int JUMP = 5;
     }
 }

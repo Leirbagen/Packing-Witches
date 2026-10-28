@@ -44,8 +44,12 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
     {
         if (runner.IsServer)
         {
+            /*
             Transform point = PlayerSpawnManager.Instance.GetRandomSpawnPoint();
             NetworkObject networkPlayerObject = runner.Spawn(_playerPrefab, point.position, point.rotation, player);
+            */
+            Vector3 spawnPosition = new Vector3((player.RawEncoded % runner.Config.Simulation.PlayerCount) * 3, 1, 0);
+            NetworkObject networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
             _spawnedCharacters.Add(player, networkPlayerObject);
         }
     }

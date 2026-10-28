@@ -62,14 +62,18 @@ public class PlayerController : NetworkBehaviour
             wasGrounded = true; // could be useful
             Stamina = maxStamina;
         }
+        /*
         if (HasInputAuthority)
         {
+            
             var staminaUI = FindFirstObjectByType<StaminaUI>();
             if (staminaUI != null)
             {
                 staminaUI.Bind(this);
             }
+            
         }
+        */
     }
 
     public override void FixedUpdateNetwork()
