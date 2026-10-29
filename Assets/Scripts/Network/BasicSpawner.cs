@@ -145,7 +145,8 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
         if (_runner != null) return;
 
         CurrentRoomCode = roomCode;
-        
+
+        Debug.Log("joining to: " + CurrentRoomCode);
 
         GameObject runnerObj = new GameObject("NetworkRunner_Instance");
         DontDestroyOnLoad(runnerObj);
@@ -196,6 +197,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
     {
         string code = GenerateRoomCode();
         StartGame(GameMode.Host, code, sceneToLoad);
+        Debug.Log("match code: " + code);
     }
 
     public void JoinGame(string code)
