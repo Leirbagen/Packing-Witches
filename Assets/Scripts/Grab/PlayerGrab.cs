@@ -68,10 +68,6 @@ public class PlayerGrab : NetworkBehaviour
 
     private void TryDrop()
     {
-        if(!HasStateAuthority)
-        {
-            return;
-        }
         if (HeldObject != null)
         {
             RPC_RequestDrop(HeldObject.Object);
@@ -84,6 +80,11 @@ public class PlayerGrab : NetworkBehaviour
         if (IsHolding)
         {
             return;
+        }
+
+        if (obj.TryGetComponent(out DeliverablePackage package))
+        {
+            if (package.IsDelivered) return;
         }
 
         GrabbableObject grabbable = obj.GetComponent<GrabbableObject>();
