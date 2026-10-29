@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2635604042082121899
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 612289107947330583}
+  m_Layer: 0
+  m_Name: Hand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &612289107947330583
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2635604042082121899}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 1.099}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9208172444768833612}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4244672607429688699
 GameObject:
   m_ObjectHideFlags: 0
@@ -16,6 +47,7 @@ GameObject:
   - component: {fileID: 578663517925413896}
   - component: {fileID: 3178133791116648249}
   - component: {fileID: 181883619528980028}
+  - component: {fileID: 3825464125575171725}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -37,6 +69,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3036686964334589082}
+  - {fileID: 612289107947330583}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5347818467394567703
@@ -164,6 +197,7 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 181883619528980028}
   - {fileID: 7017573524452787177}
+  - {fileID: 3825464125575171725}
   - {fileID: 426990686470519035}
   ForceRemoteRenderTimeframe: 0
 --- !u!143 &3178133791116648249
@@ -210,6 +244,27 @@ MonoBehaviour:
   braking: 10
   maxSpeed: 2
   rotationSpeed: 15
+--- !u!114 &3825464125575171725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4244672607429688699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a79478b6256a04d8def951a12c2023, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rayOrigin: {fileID: 3036686964334589082}
+  grabDistance: 3
+  handPoint: {fileID: 612289107947330583}
+  grabbableLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _IsHolding:
+    RawValue: 0
+  _HeldObject: {fileID: 0}
 --- !u!1 &5720533962793693206
 GameObject:
   m_ObjectHideFlags: 0
@@ -222,6 +277,7 @@ GameObject:
   - component: {fileID: 3446671407259188238}
   - component: {fileID: 4491726572574047985}
   - component: {fileID: 426990686470519035}
+  - component: {fileID: 5087515160209877255}
   m_Layer: 0
   m_Name: Camera Look
   m_TagString: MainCamera
@@ -317,3 +373,47 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sensibility: 200
   playerBody: {fileID: 9208172444768833612}
+--- !u!114 &5087515160209877255
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5720533962793693206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
