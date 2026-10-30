@@ -171,7 +171,8 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
             SessionName = roomCode,
             Scene = scene,
             SessionProperties = sessionProps,
-            SceneManager = runnerObj.AddComponent<NetworkSceneManagerDefault>()
+            SceneManager = runnerObj.AddComponent<NetworkSceneManagerDefault>(),
+            PlayerCount = 4
         });
 
         if (!result.Ok)
@@ -203,5 +204,10 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
     public void JoinGame(string code)
     {
         StartGame(GameMode.Client, code, sceneIndex);
+    }
+
+    public void StartSinglePlayer(int sceneToLoad) 
+    {
+        StartGame(GameMode.Single, "Offline", sceneToLoad);
     }
 }
