@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 7967863096222043465}
   - component: {fileID: 7474030241061633860}
   m_Layer: 6
-  m_Name: 1BoxType
+  m_Name: LargeBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -166,7 +166,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5caadd96c05fbf24ba660588a4b4f303, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rewardValue: 20
+  rewardValue: 40
+  _IsDelivered:
+    RawValue: 0
 --- !u!114 &7474030241061633860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,7 +181,7 @@ MonoBehaviour:
   m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SortKey: 2161586748
+  SortKey: 3821153914
   SendPriority: 1
   EnableInterpolation: 1
   Flags: 262146

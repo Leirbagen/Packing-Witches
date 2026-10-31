@@ -174,7 +174,7 @@ MonoBehaviour:
   - {fileID: 181883619528980028}
   - {fileID: 7017573524452787177}
   - {fileID: 3825464125575171725}
-  - {fileID: 426990686470519035}
+  - {fileID: 5142851170805888121}
   ForceRemoteRenderTimeframe: 0
 --- !u!143 &3178133791116648249
 CharacterController:
@@ -252,8 +252,8 @@ GameObject:
   - component: {fileID: 3036686964334589082}
   - component: {fileID: 3446671407259188238}
   - component: {fileID: 4491726572574047985}
-  - component: {fileID: 426990686470519035}
   - component: {fileID: 5087515160209877255}
+  - component: {fileID: 5142851170805888121}
   m_Layer: 3
   m_Name: Camera Look
   m_TagString: MainCamera
@@ -335,20 +335,6 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5720533962793693206}
   m_Enabled: 1
---- !u!114 &426990686470519035
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5720533962793693206}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0f583883c3ef7ec42acc3bf3058667de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sensibility: 200
-  playerBody: {fileID: 9208172444768833612}
 --- !u!114 &5087515160209877255
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -393,3 +379,20 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &5142851170805888121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5720533962793693206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aec997c0bb312a44385e0e83dba1798c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 3036686964334589082}
+  interactionDistance: 10
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 0
