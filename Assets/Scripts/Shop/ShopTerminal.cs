@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ShopTerminal : MonoBehaviour, IInteractable
+public class ShopTerminal : MonoBehaviour
 {
     [SerializeField] private GameObject shopPanel;
     public static bool IsOpen { get; private set; }

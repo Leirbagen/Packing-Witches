@@ -1,7 +1,7 @@
 using Fusion;
 using UnityEngine;
 
-public class GrabbableObject : NetworkBehaviour, IInteractable
+public class GrabbableObject : NetworkBehaviour
 {
     private Rigidbody rb;
     [Networked] public NetworkBool IsGrabbed { get; set; }
@@ -14,7 +14,7 @@ public class GrabbableObject : NetworkBehaviour, IInteractable
 
     public void Interact(PlayerInteractor interactor)
     {
-        interactor.Grab.RequestGrab(this);
+        //interactor.Grab.RequestGrab(this);
     }
 
     private void Awake()
@@ -49,10 +49,6 @@ public class GrabbableObject : NetworkBehaviour, IInteractable
                 rb.isKinematic = false;
                 rb.useGravity = true;
             }
-<<<<<<< HEAD
-=======
-            if (IsGrabbed) Debug.Log($"[Grab] 6. Following hand. holder={CurrentHolder}");
->>>>>>> 84b674c1ff24aa4b0e984b76d60713f992df911f
         }
     }
 }
