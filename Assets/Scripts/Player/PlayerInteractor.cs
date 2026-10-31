@@ -1,63 +1,42 @@
 using Fusion;
 using UnityEngine;
 
-public interface IInteractable
-{
-    bool CanInteract(PlayerInteractor interactor);
-    void Interact(PlayerInteractor interactor);
-}
-
-[RequireComponent(typeof(PlayerGrab))]
 public class PlayerInteractor : NetworkBehaviour
 {
-    public Transform rayOrigin;
-    public float interactDistance = 3f;
-    public LayerMask interactLayer;
+    public Transform cameraTransform;
+    public float interactionDistance = 3f;
+    public LayerMask interactableLayer;
+    private IInteractable currentInteractable;
 
-    public PlayerGrab Grab { get; private set; }
-    private bool wasPressed;
-
-    public override void Spawned()
+    private void Update()
     {
-        Grab = GetComponent<PlayerGrab>();
-    }
+        if (!HasStateAuthority && !HasInputAuthority) return;
 
-    public override void FixedUpdateNetwork()
-    {
-        if (!GetInput(out NetworkInputData data))
-        {
-            return;
-        } 
+        Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
 
-        bool pressed = data.buttons.IsSet(InputButton.grab);
-        if (pressed && !wasPressed && Runner.IsForward)
-        {
-            HandlePress();
-        }
-        wasPressed = pressed;
-    }
+        Debug.DrawRay(cameraTransform.position, cameraTransform.forward * interactionDistance, Color.red);
 
-    private void HandlePress()
-    {
-        if (!HasInputAuthority || rayOrigin == null)
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
         {
-            return;
-        } 
+            currentInteractable = hit.collider.GetComponentInParent<IInteractable>();
 
-        if (Grab.IsHolding)
-        {
-            Grab.RequestDrop();
-            return;
-        }
-
-        Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactLayer))
-        {
-            var interactable = hit.collider.GetComponentInParent<IInteractable>();
-            if (interactable != null && interactable.CanInteract(this))
+            if (currentInteractable != null)
             {
-                interactable.Interact(this);
+                Debug.Log($"<color=green>Looking at : {hit.collider.name}!</color> - " + currentInteractable.GetInteractionPrompt());
+
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    currentInteractable.OnInteract(Runner.LocalPlayer);
+                }
             }
+            else
+            {
+                Debug.LogWarning($"<color=yellow>Hit with {hit.collider.name}, doesnt have IInteractable.</color>");
+            }
+        }
+        else
+        {
+            currentInteractable = null;
         }
     }
 }
