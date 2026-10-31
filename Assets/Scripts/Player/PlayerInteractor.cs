@@ -11,7 +11,22 @@ public class PlayerInteractor : NetworkBehaviour
     private void Update()
     {
         if (!HasStateAuthority && !HasInputAuthority) return;
+        if (ShopTerminal.IsOpen) return;
+        bool grabPressed = InputController.Instance.GetButtonDown(InputController.Input.GRAB);
+        if (grabPressed)
+        {
+            var grab = GetComponentInParent<PlayerGrab>();
+            if (grab == null)
+            {
+                grab = GetComponentInChildren<PlayerGrab>();
+            }
 
+            if (grab != null && grab.IsHolding)
+            {
+                grab.RequestDrop();
+                return;
+            }
+        }
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
 
         Debug.DrawRay(cameraTransform.position, cameraTransform.forward * interactionDistance, Color.red);
@@ -24,7 +39,7 @@ public class PlayerInteractor : NetworkBehaviour
             {
                 Debug.Log($"<color=green>Looking at : {hit.collider.name}!</color> - " + currentInteractable.GetInteractionPrompt());
 
-                if (Input.GetKeyDown(KeyCode.F))
+                if (grabPressed)
                 {
                     currentInteractable.OnInteract(Runner.LocalPlayer);
                 }
