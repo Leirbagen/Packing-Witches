@@ -27,4 +27,18 @@ public class EconomyManager : NetworkBehaviour
     {
         OnRevenueUpdated?.Invoke(TotalRevenue);
     }
+
+    public bool TrySpend(int amount)
+    {
+        if (!HasStateAuthority)
+        {
+            return false;
+        } 
+        if (TotalRevenue < amount)
+        {
+            return false;
+        } 
+        TotalRevenue -= amount;
+        return true;
+    }
 }
