@@ -102,7 +102,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: b8c3a4954da983b4ba3e5a4f2ac49cd8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -175,6 +175,7 @@ MonoBehaviour:
   - {fileID: 7017573524452787177}
   - {fileID: 3825464125575171725}
   - {fileID: 5142851170805888121}
+  - {fileID: 1192922955836407425}
   ForceRemoteRenderTimeframe: 0
 --- !u!143 &3178133791116648249
 CharacterController:
@@ -232,12 +233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1a79478b6256a04d8def951a12c2023, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rayOrigin: {fileID: 3036686964334589082}
-  grabDistance: 3
   handPoint: {fileID: 612289107947330583}
-  grabbableLayer:
-    serializedVersion: 2
-    m_Bits: 64
   _IsHolding:
     RawValue: 0
   _HeldObject: {fileID: 0}
@@ -254,6 +250,7 @@ GameObject:
   - component: {fileID: 4491726572574047985}
   - component: {fileID: 5087515160209877255}
   - component: {fileID: 5142851170805888121}
+  - component: {fileID: 1192922955836407425}
   m_Layer: 3
   m_Name: Camera Look
   m_TagString: MainCamera
@@ -395,4 +392,18 @@ MonoBehaviour:
   interactionDistance: 10
   interactableLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
+--- !u!114 &1192922955836407425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5720533962793693206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f583883c3ef7ec42acc3bf3058667de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sensibility: 200
+  playerBody: {fileID: 9208172444768833612}

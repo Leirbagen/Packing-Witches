@@ -10,7 +10,7 @@ public class BoxSpawner : NetworkBehaviour, IInteractable
 
     public string GetInteractionPrompt()
     {
-        return $"Presiona [F] para instanciar {boxName}";
+        return $"Press F to instantiate {boxName}";
     }
 
     public void OnInteract(PlayerRef interactor)
