@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 3178133791116648249}
   - component: {fileID: 181883619528980028}
   - component: {fileID: 3825464125575171725}
+  - component: {fileID: -2073857529765773434}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -198,6 +199,7 @@ MonoBehaviour:
   - {fileID: 181883619528980028}
   - {fileID: 7017573524452787177}
   - {fileID: 3825464125575171725}
+  - {fileID: -2073857529765773434}
   - {fileID: 426990686470519035}
   ForceRemoteRenderTimeframe: 0
 --- !u!143 &3178133791116648249
@@ -256,15 +258,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1a79478b6256a04d8def951a12c2023, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rayOrigin: {fileID: 3036686964334589082}
-  grabDistance: 3
   handPoint: {fileID: 612289107947330583}
-  grabbableLayer:
-    serializedVersion: 2
-    m_Bits: 64
   _IsHolding:
     RawValue: 0
   _HeldObject: {fileID: 0}
+--- !u!114 &-2073857529765773434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4244672607429688699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74aee6ecac8dd55428d159f2b39803c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rayOrigin: {fileID: 3036686964334589082}
+  interactDistance: 3
+  interactLayer:
+    serializedVersion: 2
+    m_Bits: 192
 --- !u!1 &5720533962793693206
 GameObject:
   m_ObjectHideFlags: 0

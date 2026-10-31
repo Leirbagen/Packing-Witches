@@ -3,15 +3,26 @@ using UnityEngine;
 
 public class PlayerGrab : NetworkBehaviour
 {
-    public Transform rayOrigin;
-    public float grabDistance = 3f;
     public Transform handPoint;      
-    
-    public LayerMask grabbableLayer; 
     [Networked] public NetworkBool IsHolding { get; set; }
     [Networked] public GrabbableObject HeldObject { get; set; }
-    private bool wasGrabPressed;
+    
+    public void RequestGrab(GrabbableObject grabbable)
+    {
+        if (!IsHolding)
+        {
+            RPC_RequestGrab(grabbable.Object);
+        } 
+    }
 
+    public void RequestDrop()
+    {
+        if (HeldObject != null)
+        {
+            RPC_RequestDrop(HeldObject.Object);
+        } 
+    }
+    /*
     public override void FixedUpdateNetwork()
     {
         if (GetInput(out NetworkInputData data))
@@ -47,23 +58,7 @@ public class PlayerGrab : NetworkBehaviour
                 RPC_RequestGrab(grabbable.Object);
             }
         }
-        /*
-        Collider[] hits = Physics.OverlapSphere(handPoint.position, grabRadius, grabbableLayer);
-        Debug.Log($"[Grab] 2. Colliders encontrados: {hits.Length}");
-        foreach (var hit in hits)
-        {
-            bool ok = hit.TryGetComponent(out GrabbableObject g);
-            Debug.Log($"[Grab] 3. {hit.name} tiene GrabbableObject: {ok}");
-            if (hit.TryGetComponent(out GrabbableObject grabbable))
-            {
-                if (!grabbable.IsGrabbed)
-                {
-                    RPC_RequestGrab(grabbable.Object);
-                    break;
-                }
-            }
-        }
-        */
+        
     }
 
     private void TryDrop()
@@ -73,6 +68,7 @@ public class PlayerGrab : NetworkBehaviour
             RPC_RequestDrop(HeldObject.Object);
         }
     }
+    */
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_RequestGrab(NetworkObject obj)
