@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 612289107947330583}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Hand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -42,14 +42,17 @@ GameObject:
   - component: {fileID: 9208172444768833612}
   - component: {fileID: 5347818467394567703}
   - component: {fileID: 5167319237682566962}
-  - component: {fileID: 7169654612002673564}
   - component: {fileID: 7017573524452787177}
   - component: {fileID: 578663517925413896}
   - component: {fileID: 3178133791116648249}
   - component: {fileID: 181883619528980028}
   - component: {fileID: 3825464125575171725}
+<<<<<<< HEAD
   - component: {fileID: -2073857529765773434}
   m_Layer: 0
+=======
+  m_Layer: 3
+>>>>>>> 84b674c1ff24aa4b0e984b76d60713f992df911f
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -126,29 +129,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &7169654612002673564
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4244672607429688699}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &7017573524452787177
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -242,8 +222,8 @@ MonoBehaviour:
   _stateAuthorityChangeErrorCorrectionDelta: 0
   gravity: -20
   jumpImpulse: 8
-  acceleration: 10
-  braking: 10
+  acceleration: 8
+  braking: 7
   maxSpeed: 2
   rotationSpeed: 15
 --- !u!114 &3825464125575171725
@@ -292,7 +272,7 @@ GameObject:
   - component: {fileID: 4491726572574047985}
   - component: {fileID: 426990686470519035}
   - component: {fileID: 5087515160209877255}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Camera Look
   m_TagString: MainCamera
   m_Icon: {fileID: 0}

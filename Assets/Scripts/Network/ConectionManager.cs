@@ -10,6 +10,11 @@ public class ConectionManager : MonoBehaviour
         BasicSpawner.Instance.HostGame(sceneIndex);
     }
 
+    public void SinglePlayer(int sceneIndex) 
+    {
+        BasicSpawner.Instance.StartSinglePlayer(sceneIndex);
+    }
+
     public void Join()
     {
         string code = codeInput.text.Trim().ToUpper();

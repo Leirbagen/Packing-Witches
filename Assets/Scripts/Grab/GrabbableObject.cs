@@ -49,6 +49,10 @@ public class GrabbableObject : NetworkBehaviour, IInteractable
                 rb.isKinematic = false;
                 rb.useGravity = true;
             }
+<<<<<<< HEAD
+=======
+            if (IsGrabbed) Debug.Log($"[Grab] 6. Following hand. holder={CurrentHolder}");
+>>>>>>> 84b674c1ff24aa4b0e984b76d60713f992df911f
         }
     }
 }
