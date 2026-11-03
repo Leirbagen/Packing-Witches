@@ -1,6 +1,7 @@
+using Fusion;
 using UnityEngine;
 
-public class ShopTerminal : MonoBehaviour
+public class ShopTerminal : MonoBehaviour, IInteractable
 {
     [SerializeField] private GameObject shopPanel;
     public static bool IsOpen { get; private set; }
@@ -17,13 +18,17 @@ public class ShopTerminal : MonoBehaviour
         
     }
 
-    public bool CanInteract(PlayerInteractor interactor)
+    public string GetInteractionPrompt()
     {
-        return !IsOpen;
+        return "Press F to open the shop";
     }
 
-    public void Interact(PlayerInteractor interactor)
+    public void OnInteract(PlayerRef interactor)
     {
+        if (IsOpen)
+        {
+            return;
+        } 
         Open();
     }
 
