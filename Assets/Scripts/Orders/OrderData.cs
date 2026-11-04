@@ -10,6 +10,7 @@ public class OrderData : ScriptableObject
     public double payment;
 }
 
+[System.Serializable]
 public class ProductQuantity
 {
     public ProductData product;

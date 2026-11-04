@@ -8,7 +8,7 @@ public class OrderManager : NetworkBehaviour
     [SerializeField] private OrderCatalog catalog;
     [SerializeField] private float minSeconds = 20f;
     [SerializeField] private float maxSeconds = 40f;
-    [Networked, Capacity(10)]
+    [Networked, Capacity(10)] //max capacity for orders
     public NetworkLinkedList<int> ReceivedOrders => default;
     [Networked] private TickTimer nextOrderTimer { get; set; }
     public static event Action OnOrdersChanged;
