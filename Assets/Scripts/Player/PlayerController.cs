@@ -62,18 +62,6 @@ public class PlayerController : NetworkBehaviour
             wasGrounded = true; // could be useful
             Stamina = maxStamina;
         }
-        /*
-        if (HasInputAuthority)
-        {
-            
-            var staminaUI = FindFirstObjectByType<StaminaUI>();
-            if (staminaUI != null)
-            {
-                staminaUI.Bind(this);
-            }
-            
-        }
-        */
     }
 
     public override void FixedUpdateNetwork()
@@ -164,30 +152,6 @@ public class PlayerController : NetworkBehaviour
         
 
         transform.rotation = Quaternion.Euler(0f, NetworkYaw, 0f);
-        /*
-        if (!characterController.Grounded)
-        {
-            if (transform.position.y > highestYPosition)
-            {
-                highestYPosition = transform.position.y;
-            }
-        }
-        else
-        {
-            if (!wasGrounded)
-            {
-                if (Runner.IsForward)
-                {
-                    if (playerAudio != null && landSound != null)
-                    {
-                        playerAudio.PlayOneShot(landSound);
-                    }
-                }
-                float fallDistance = highestYPosition - transform.position.y;
-            }
-            highestYPosition = transform.position.y;
-        }
-        */
         wasGrounded = characterController.Grounded;
     }
 
