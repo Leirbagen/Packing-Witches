@@ -1,6 +1,5 @@
 using Fusion;
 using UnityEngine;
-using static Unity.Collections.Unicode;
 
 public class BoxSpawner : NetworkBehaviour, IInteractable
 {
@@ -10,7 +9,7 @@ public class BoxSpawner : NetworkBehaviour, IInteractable
 
     public string GetInteractionPrompt()
     {
-        return $"Press F to instantiate {boxName}";
+        return $"Press E to instantiate {boxName}";
     }
 
     public void OnInteract(PlayerRef interactor)

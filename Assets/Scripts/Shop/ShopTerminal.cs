@@ -12,12 +12,6 @@ public class ShopTerminal : MonoBehaviour, IInteractable
         shopPanel.SetActive(false);
         IsOpen = false;
     }
-
-    private void Update()
-    {
-        
-    }
-
     public string GetInteractionPrompt()
     {
         return "Press F to open the shop";
