@@ -140,13 +140,12 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
         DontDestroyOnLoad(gameObject);
     }
 
-    async void StartGame(GameMode mode, string roomCode, int sceneToLoad)
+    async void StartGame(GameMode mode, string roomCode, int sceneToLoad, string regionCode = "")
     {
         if (_runner != null) return;
 
         CurrentRoomCode = roomCode;
-
-        Debug.Log("joining to: " + CurrentRoomCode);
+        Debug.Log("joining to: " + CurrentRoomCode + " in region: " + (string.IsNullOrEmpty(regionCode) ? "Auto" : regionCode));
 
         GameObject runnerObj = new GameObject("NetworkRunner_Instance");
         DontDestroyOnLoad(runnerObj);
@@ -163,7 +162,10 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
         }
 
         var sessionProps = new Dictionary<string, SessionProperty>();
-        
+
+        var customSettings = Fusion.Photon.Realtime.PhotonAppSettings.Global.AppSettings;
+
+        customSettings.FixedRegion = regionCode;
 
         var result = await _runner.StartGame(new StartGameArgs()
         {
@@ -172,7 +174,8 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
             Scene = scene,
             SessionProperties = sessionProps,
             SceneManager = runnerObj.AddComponent<NetworkSceneManagerDefault>(),
-            PlayerCount = 4
+            PlayerCount = 4,
+            CustomPhotonAppSettings = customSettings
         });
 
         if (!result.Ok)
@@ -194,20 +197,22 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
         return code;
     }
 
-    public void HostGame(int sceneToLoad)
+    public void HostGame(int sceneToLoad, string regionCode = "")
     {
         string code = GenerateRoomCode();
-        StartGame(GameMode.Host, code, sceneToLoad);
+        StartGame(GameMode.Host, code, sceneToLoad, regionCode);
+        string nombreRegion = string.IsNullOrEmpty(regionCode) ? "Auto" : regionCode;
         Debug.Log("match code: " + code);
+        Debug.Log(" Region:" + nombreRegion);
     }
 
-    public void JoinGame(string code)
+    public void JoinGame(string code, string regionCode = "")
     {
-        StartGame(GameMode.Client, code, sceneIndex);
+        StartGame(GameMode.Client, code, sceneIndex, regionCode);
     }
 
-    public void StartSinglePlayer(int sceneToLoad) 
+    public void StartSinglePlayer(int sceneToLoad)
     {
-        StartGame(GameMode.Single, "Offline", sceneToLoad);
+        StartGame(GameMode.Single, "Offline", sceneToLoad, ""); 
     }
 }
