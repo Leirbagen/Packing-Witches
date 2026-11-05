@@ -4,7 +4,7 @@ using UnityEngine;
 public class OrdersUI : MonoBehaviour
 {
     [SerializeField] private Transform container;
-    [SerializeField] private TMP_Text orderPrefab;
+    [SerializeField] private OrderEntryUI orderPrefab;
 
     private void OnEnable()
     {
@@ -28,8 +28,8 @@ public class OrdersUI : MonoBehaviour
             OrderData order = OrderManager.Instance.GetOrder(id);
             if (order == null) continue;
 
-            TMP_Text entry = Instantiate(orderPrefab, container);
-            entry.text = BuildText(order);
+            OrderEntryUI entry = Instantiate(orderPrefab, container);
+            entry.OrderConstructor(id, BuildText(order));
         }
     }
 
