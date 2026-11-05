@@ -12,5 +12,6 @@ public enum InputButton
 {
     jump,
     run,
-    grab
+    grab,
+    pack
 }

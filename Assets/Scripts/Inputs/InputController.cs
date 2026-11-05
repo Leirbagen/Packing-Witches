@@ -96,5 +96,6 @@ public class InputController : MonoBehaviour
         public const int RUN = 4;
         public const int JUMP = 5;
         public const int GRAB = 6;
+        public const int PACK = 7;
     }
 }

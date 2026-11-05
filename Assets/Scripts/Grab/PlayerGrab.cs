@@ -3,16 +3,16 @@ using UnityEngine;
 
 public class PlayerGrab : NetworkBehaviour
 {
-    public Transform handPoint;      
+    public Transform handPoint;
     [Networked] public NetworkBool IsHolding { get; set; }
     [Networked] public GrabbableObject HeldObject { get; set; }
-    
+
     public void RequestGrab(GrabbableObject grabbable)
     {
         if (!IsHolding)
         {
             RPC_RequestGrab(grabbable.Object);
-        } 
+        }
     }
 
     public void RequestDrop()
@@ -20,55 +20,8 @@ public class PlayerGrab : NetworkBehaviour
         if (HeldObject != null)
         {
             RPC_RequestDrop(HeldObject.Object);
-        } 
-    }
-    /*
-    public override void FixedUpdateNetwork()
-    {
-        if (GetInput(out NetworkInputData data))
-        {
-            bool isGrabPressed = data.buttons.IsSet(InputButton.grab);
-            if (isGrabPressed && !wasGrabPressed && Runner.IsForward)
-            {
-                if (!IsHolding)
-                {
-                    TryGrab();
-                }
-                else
-                {
-                    TryDrop();
-                }
-            }
-            wasGrabPressed = isGrabPressed;
         }
     }
-
-    private void TryGrab()
-    {
-        if(!HasInputAuthority || rayOrigin == null)
-        {
-            return;
-        }
-        Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
-        if(Physics.Raycast(ray, out RaycastHit hit, grabDistance, grabbableLayer))
-        {
-            var grabbable = hit.collider.GetComponent<GrabbableObject>();
-            if(grabbable != null && !grabbable.IsGrabbed)
-            {
-                RPC_RequestGrab(grabbable.Object);
-            }
-        }
-        
-    }
-
-    private void TryDrop()
-    {
-        if (HeldObject != null)
-        {
-            RPC_RequestDrop(HeldObject.Object);
-        }
-    }
-    */
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_RequestGrab(NetworkObject obj)
@@ -92,24 +45,8 @@ public class PlayerGrab : NetworkBehaviour
             HeldObject = grabbable;
             IsHolding = true;
 
+            ToggleCollisions(grabbable, true);
         }
-        /*
-        Debug.Log($"[Grab] 4. RPC llegó. obj={obj}, IsHolding={IsHolding}");
-        if (IsHolding) return;
-
-        GrabbableObject grabbable = obj.GetComponent<GrabbableObject>();
-        if (grabbable != null && !grabbable.IsGrabbed)
-        {
-            grabbable.IsGrabbed = true;
-            grabbable.CurrentHolder = this.Object;
-
-            HeldObject = grabbable;
-            IsHolding = true;
-            Debug.Log($"[Grab] 5. IsGrabbed={grabbable.IsGrabbed}, " +
-          $"objStateAuth={grabbable.Object.HasStateAuthority}, " +
-          $"IsHolding={IsHolding}");
-        }
-        */
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -118,6 +55,8 @@ public class PlayerGrab : NetworkBehaviour
         GrabbableObject grabbable = obj.GetComponent<GrabbableObject>();
         if (grabbable != null)
         {
+            ToggleCollisions(grabbable, false);
+
             grabbable.IsGrabbed = false;
             grabbable.CurrentHolder = null;
         }
@@ -126,4 +65,19 @@ public class PlayerGrab : NetworkBehaviour
         IsHolding = false;
     }
 
+    private void ToggleCollisions(GrabbableObject grabbable, bool ignore)
+    {
+        Collider playerCollider = GetComponentInChildren<Collider>();
+        if (playerCollider == null)
+        {
+            playerCollider = GetComponentInParent<Collider>();
+        }
+
+        Collider itemCollider = grabbable.GetComponent<Collider>();
+
+        if (playerCollider != null && itemCollider != null)
+        {
+            Physics.IgnoreCollision(playerCollider, itemCollider, ignore);
+        }
+    }
 }

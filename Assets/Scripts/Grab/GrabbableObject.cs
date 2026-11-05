@@ -26,7 +26,7 @@ public class GrabbableObject : NetworkBehaviour, IInteractable
         }
         else
         {
-            return "Press F to grab";
+            return "Press E to grab";
         }
     }
 
@@ -37,7 +37,7 @@ public class GrabbableObject : NetworkBehaviour, IInteractable
 
     public void OnInteract(PlayerRef interactor)
     {
-        Debug.Log("[Grab] 1. OnInteract llamado. IsGrabbed=" + IsGrabbed);
+        Debug.Log("[Grab] 1. OnInteract called. IsGrabbed=" + IsGrabbed);
         if (IsGrabbed)
         {
             return;
@@ -51,7 +51,7 @@ public class GrabbableObject : NetworkBehaviour, IInteractable
 
         if (grab == null)
         {
-            Debug.LogWarning("[Grab] 2. TryGetPlayerObject falló, busco por InputAuthority");
+            Debug.LogWarning("[Grab] 2. TryGetPlayerObject failed, searching by InputAuthority");
             foreach (PlayerGrab g in FindObjectsByType<PlayerGrab>(FindObjectsSortMode.None))
             {
                 if (g.Object.InputAuthority == interactor)
@@ -64,11 +64,11 @@ public class GrabbableObject : NetworkBehaviour, IInteractable
 
         if (grab == null)
         {
-            Debug.LogError("[Grab] 3. No encontré el PlayerGrab del jugador " + interactor);
+            Debug.LogError("[Grab] 3. Playergrab not found " + interactor);
             return;
         }
 
-        Debug.Log("[Grab] 4. Pidiendo agarrar " + name);
+        Debug.Log("[Grab] 4. Asking to grab " + name);
         grab.RequestGrab(this);
     }
     

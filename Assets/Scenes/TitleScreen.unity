@@ -3011,6 +3011,62 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.actionIdCounter
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.actions.Array.size
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.actions.Array.data[7]._id
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.actions.Array.data[7]._name
+      value: Pack
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.actions.Array.data[7]._type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.actions.Array.data[7]._userAssignable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.actions.Array.data[7]._descriptiveName
+      value: Pack
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.keyboardMaps.Array.data[0].actionElementMaps.Array.size
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.actionCategoryMap.list.Array.data[0].actionIds.Array.size
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: '_userData.actionCategoryMap.list.Array.data[0].actionIds.Array.data[7]'
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.keyboardMaps.Array.data[0].actionElementMaps.Array.data[7]._actionId
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.keyboardMaps.Array.data[0].actionElementMaps.Array.data[7]._elementType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.keyboardMaps.Array.data[0].actionElementMaps.Array.data[7]._keyboardKeyCode
+      value: 102
+      objectReference: {fileID: 0}
+    - target: {fileID: 2568087993542472741, guid: 9035a75a140844a4887470177abfc04f, type: 3}
+      propertyPath: _userData.keyboardMaps.Array.data[0].actionElementMaps.Array.data[7]._elementIdentifierId
+      value: -1
+      objectReference: {fileID: 0}
     - target: {fileID: 6568866826737728498, guid: 9035a75a140844a4887470177abfc04f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
