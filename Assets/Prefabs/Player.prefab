@@ -389,7 +389,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 3036686964334589082}
-  interactionDistance: 10
+  interactionDistance: 3
   interactableLayer:
     serializedVersion: 2
     m_Bits: 192
