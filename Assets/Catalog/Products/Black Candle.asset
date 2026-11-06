@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc0a68a981801be449fc9804d4679ee1, type: 3}
-  m_Name: Vela negra
+  m_Name: Black Candle
   m_EditorClassIdentifier: 
   id: 2
-  name: Vela Negra
+  productName: Black Candle
   icon: {fileID: 0}
   price: 5

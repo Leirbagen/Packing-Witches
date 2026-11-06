@@ -4,7 +4,7 @@ using UnityEngine;
 public class ProductData : ScriptableObject
 {
     public int id;
-    public string name;
+    public string productName;
     public Sprite icon;
     public double price;
 }
