@@ -77,6 +77,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
         data.buttons.Set(InputButton.run, InputController.Instance.GetButton(InputController.Input.RUN));
         data.buttons.Set(InputButton.grab, InputController.Instance.GetButton(InputController.Input.GRAB));
+        data.buttons.Set(InputButton.rest, InputController.Instance.GetButton(InputController.Input.REST));
         input.Set(data);
     }
 
