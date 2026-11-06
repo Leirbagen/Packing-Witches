@@ -53,7 +53,6 @@ public class BoxContainer : NetworkBehaviour, IInteractable
             GrabbableObject heldObj = playerGrab.HeldObject;
 
             playerGrab.RequestDrop();
-
             CurrentLoad += item.itemSizeCost;
             item.PackIntoBox(contentParent, CurrentLoad);
 

@@ -19,7 +19,14 @@ public class PlayerGrab : NetworkBehaviour
     {
         if (HeldObject != null)
         {
-            RPC_RequestDrop(HeldObject.Object);
+            if (Object.HasStateAuthority)
+            {
+                DropItemInternal(HeldObject.Object);
+            }
+            else
+            {
+                RPC_RequestDrop(HeldObject.Object);
+            }
         }
     }
 
@@ -52,11 +59,17 @@ public class PlayerGrab : NetworkBehaviour
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_RequestDrop(NetworkObject obj)
     {
+        DropItemInternal(obj);
+    }
+
+    private void DropItemInternal(NetworkObject obj)
+    {
+        if (obj == null) return;
+
         GrabbableObject grabbable = obj.GetComponent<GrabbableObject>();
         if (grabbable != null)
         {
             ToggleCollisions(grabbable, false);
-
             grabbable.IsGrabbed = false;
             grabbable.CurrentHolder = null;
         }
