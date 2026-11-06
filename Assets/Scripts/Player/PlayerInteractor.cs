@@ -16,6 +16,7 @@ public class PlayerInteractor : NetworkBehaviour
 
         bool grabPressed = InputController.Instance.GetButtonDown(InputController.Input.GRAB);
         bool packPressed = InputController.Instance.GetButtonDown(InputController.Input.PACK);
+        bool restPressed = InputController.Instance.GetButtonDown(InputController.Input.REST);
 
         PlayerGrab playerGrab = GetComponentInParent<PlayerGrab>();
         if (playerGrab == null)
@@ -71,13 +72,19 @@ public class PlayerInteractor : NetworkBehaviour
                     Debug.Log($"<color=green>Looking at : {validHit.collider.name}!</color> - " + prompt);
 
                     bool isBoxContainer = currentInteractable is BoxContainer;
+                    bool isRestZone = currentInteractable is RestZone;
 
-                    if (isBoxContainer && packPressed)
+                    if (isRestZone && restPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
                     }
-                    else if (!isBoxContainer && grabPressed)
+                    else if (isBoxContainer && packPressed)
+                    {
+                        currentInteractable.OnInteract(Runner.LocalPlayer);
+                        return;
+                    }
+                    else if (!isBoxContainer && !isRestZone && grabPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
