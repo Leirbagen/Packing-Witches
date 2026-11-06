@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc0a68a981801be449fc9804d4679ee1, type: 3}
-  m_Name: Amuleto de mala suerte
+  m_Name: Bald Poison
   m_EditorClassIdentifier: 
-  id: 0
-  name: Amuleto de mala suerte
+  id: 1
+  productName: Bald Poison
   icon: {fileID: 0}
-  price: 20
+  price: 15

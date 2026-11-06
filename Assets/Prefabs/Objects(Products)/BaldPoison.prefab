@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 2909923652584355929}
   - component: {fileID: 4176721885057290848}
   m_Layer: 6
-  m_Name: TestObjectSmall
+  m_Name: BaldPoison
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -103,6 +103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23e39cce5e2943e4da8b7c4b1b15df43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  productData: {fileID: 11400000, guid: 7e8711c5bc1f9434e94fd2f71f455b18, type: 2}
   itemSizeCost: 1
   _IsPacked:
     RawValue: 0

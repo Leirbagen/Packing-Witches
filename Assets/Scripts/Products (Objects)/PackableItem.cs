@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class PackableItem : NetworkBehaviour
 {
+    [Header("Product Reference")]
+    public ProductData productData; 
+
     [Header("Item Configuration")]
     public int itemSizeCost = 1;
     [Networked] public NetworkBool IsPacked { get; set; }

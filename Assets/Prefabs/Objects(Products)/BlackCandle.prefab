@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 3810164497349422176}
   - component: {fileID: 6922510924138688534}
   m_Layer: 6
-  m_Name: TestObjectBig
+  m_Name: BlackCandle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -103,6 +103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23e39cce5e2943e4da8b7c4b1b15df43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  productData: {fileID: 11400000, guid: 2e2f7dc0472589c429acba26632b1f27, type: 2}
   itemSizeCost: 2
   _IsPacked:
     RawValue: 0
