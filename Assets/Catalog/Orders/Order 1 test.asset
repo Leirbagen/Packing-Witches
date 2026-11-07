@@ -22,3 +22,4 @@ MonoBehaviour:
   - product: {fileID: 11400000, guid: f913379e0f1b8db48967d2e6c2abb3c3, type: 2}
     quantity: 1
   payment: 45
+  destination: {fileID: 11400000, guid: 161f799ff734732478234c12e32965f7, type: 2}

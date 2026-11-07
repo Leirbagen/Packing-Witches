@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
@@ -32,11 +33,81 @@ public class DeliveryZone : NetworkBehaviour
     {
         package.IsDelivered = true;
 
-        if (EconomyManager.Instance != null)
+        BoxContainer box = package.GetComponent<BoxContainer>();
+        if (box != null)
         {
-            EconomyManager.Instance.AddRevenue(package.rewardValue);
+            int payment = CheckBox(box);
+            if (payment > 0 && EconomyManager.Instance != null)
+            {
+                EconomyManager.Instance.AddRevenue(payment);
+            }
+            Debug.Log("[Delivery] Pago: " + payment);
         }
 
+        PlaceBox(package);
+    }
+
+    private int CheckBox(BoxContainer box)
+    {
+        if (!box.HasStamp)
+        {
+            Debug.Log("[Delivery] La caja no tiene estampa");
+            return 0;
+        }
+        var orders = OrderManager.Instance.ReceivedOrders;
+        OrderData order = null;
+        int orderId = -1;
+        for (int i = 0; i < orders.Count; i++)
+        {
+            OrderData candidate = OrderManager.Instance.GetOrder(orders[i]);
+            if (candidate.destination.id == box.StampDestinationId)
+            {
+                order = candidate;
+                orderId = orders[i];
+                break;
+            }
+        }
+        if (order == null)
+        {
+            return 0;
+        } 
+        List<int> boxItems = new List<int>();
+        foreach (int id in box.PackedItemIDs)
+        {
+            boxItems.Add(id);
+        }
+        int missing = 0;
+        foreach (ProductQuantity line in order.products)
+        {
+            for (int i = 0; i < line.quantity; i++)
+            {
+                if (boxItems.Contains(line.product.id))
+                {
+                    boxItems.Remove(line.product.id);
+                }
+                else
+                {
+                    missing++;
+                }
+            }
+        }
+        int extra = boxItems.Count;
+        int errors = Mathf.Max(missing, extra);
+        orders.Remove(orderId);
+        int fullPay = Mathf.RoundToInt((float)order.payment);
+        if (errors == 0)
+        {
+            return fullPay;
+        } 
+        if (errors == 1)
+        {
+            return fullPay / 2;
+        } 
+        return 0;
+    }
+
+    private void PlaceBox(DeliverablePackage package)
+    {
         Rigidbody rb = package.GetComponent<Rigidbody>();
         if (rb != null)
         {
