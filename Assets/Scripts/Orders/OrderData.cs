@@ -8,6 +8,7 @@ public class OrderData : ScriptableObject
     public string message;
     public List<ProductQuantity> products = new List<ProductQuantity>();
     public double payment;
+    public OrderDestiny destination;
 }
 
 [System.Serializable]
