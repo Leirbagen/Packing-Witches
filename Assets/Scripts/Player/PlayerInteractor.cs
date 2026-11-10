@@ -73,18 +73,19 @@ public class PlayerInteractor : NetworkBehaviour
 
                     bool isBoxContainer = currentInteractable is BoxContainer;
                     bool isRestZone = currentInteractable is RestZone;
+                    bool isCraftingTable = currentInteractable is CraftingTable;
 
                     if (isRestZone && restPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
                     }
-                    else if (isBoxContainer && packPressed)
+                    else if ((isBoxContainer || isCraftingTable) && packPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
                     }
-                    else if (!isBoxContainer && !isRestZone && grabPressed)
+                    else if (!isBoxContainer && !isRestZone && !isCraftingTable && grabPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
