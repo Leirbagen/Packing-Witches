@@ -197,7 +197,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boxName: Large Box
-  maxCapacity: 4
+  maxCapacity: 10
   _CurrentLoad: 0
   _PackedItemIDs: 
   _HasStamp:
