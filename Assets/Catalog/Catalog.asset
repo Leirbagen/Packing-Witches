@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   orders:
   - {fileID: 11400000, guid: 3603f97516f7f9143b4773fd643b2a7c, type: 2}
+  - {fileID: 11400000, guid: 44c03b097d08ac8408dd7335f4f8facd, type: 2}
+  - {fileID: 11400000, guid: b90ddf5e57cee3a4b8f61d3b1ae78fc2, type: 2}
