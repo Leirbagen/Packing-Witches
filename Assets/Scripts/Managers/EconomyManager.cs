@@ -17,6 +17,14 @@ public class EconomyManager : NetworkBehaviour
         else Destroy(gameObject);
     }
 
+    public override void Spawned()
+    {
+        if (HasStateAuthority)
+        {
+            TotalRevenue = 100; 
+        }
+    }
+
     public void AddRevenue(int amount)
     {
         if (!HasStateAuthority) return;

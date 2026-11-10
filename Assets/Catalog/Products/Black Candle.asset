@@ -15,4 +15,4 @@ MonoBehaviour:
   id: 2
   productName: Black Candle
   icon: {fileID: 0}
-  price: 5
+  price: 20
