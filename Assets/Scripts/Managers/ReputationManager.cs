@@ -1,4 +1,6 @@
+using System;
 using Fusion;
+
 using UnityEngine;
 
 public class ReputationManager : NetworkBehaviour
