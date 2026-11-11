@@ -24,12 +24,25 @@ public class CraftingTable : NetworkBehaviour, IInteractable
         if (IsProcessing)
         {
             float time = ProcessTimer.RemainingTime(Runner) ?? 0f;
-            return $"Processing..{time:F1}s";
+            return $"Processing... {time:F1}s";
         }
 
         if (PlacedIngredientIDs.Count > 0)
         {
-            return $"Press [F] to place item OR craft ({PlacedIngredientIDs.Count} items on table)";
+            List<CraftingRecipe> possible = GetPossibleRecipes();
+
+            if (possible.Count == 0) return "<color=red>Invalid combination. Missing or wrong item.</color>";
+
+            foreach (CraftingRecipe p in possible)
+            {
+                if (p.requiredIngredients.Length == PlacedIngredientIDs.Count)
+                {
+                    return $"Press [F] to craft: <color=yellow>{p.recipeName}</color>";
+                }
+            }
+
+            string possibleNames = string.Join(", ", possible.Select(r => r.recipeName));
+            return $"Items: {PlacedIngredientIDs.Count} | Possible: <color=cyan>{possibleNames}</color>";
         }
 
         return "Press [F] to place ingredient";
@@ -95,6 +108,41 @@ public class CraftingTable : NetworkBehaviour, IInteractable
         }
     }
 
+    private List<CraftingRecipe> GetPossibleRecipes()
+    {
+        List<CraftingRecipe> possibleRecipes = new List<CraftingRecipe>();
+        if (PlacedIngredientIDs.Count == 0) return possibleRecipes;
+
+        foreach (CraftingRecipe recipe in availableRecipes)
+        {
+            if (CanFormRecipe(recipe))
+            {
+                possibleRecipes.Add(recipe);
+            }
+        }
+        return possibleRecipes;
+    }
+
+    private bool CanFormRecipe(CraftingRecipe recipe)
+    {
+        if (PlacedIngredientIDs.Count > recipe.requiredIngredients.Length) return false;
+
+        List<int> requirements = new List<int>();
+        foreach (ProductData req in recipe.requiredIngredients) requirements.Add(req.id);
+
+        foreach (int tableItemID in PlacedIngredientIDs)
+        {
+            if (requirements.Contains(tableItemID))
+            {
+                requirements.Remove(tableItemID); 
+            }
+            else
+            {
+                return false; 
+            }
+        }
+        return true;
+    }
     private void TryCraft()
     {
         if (PlacedIngredientIDs.Count == 0) return;
