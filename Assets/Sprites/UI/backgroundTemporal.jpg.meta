@@ -1,7 +1,10 @@
 fileFormatVersion: 2
 guid: 66eaa841426a6d84f93c9a7cb48ce707
 TextureImporter:
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      213: -8308237771761524644
+    second: backgroundTemporal_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -95,7 +98,29 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: backgroundTemporal_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 551
+        height: 362
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c50eba8f3c533bc80800000000000000
+      internalID: -8308237771761524644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
