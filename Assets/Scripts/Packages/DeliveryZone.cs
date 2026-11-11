@@ -36,19 +36,23 @@ public class DeliveryZone : NetworkBehaviour
         BoxContainer box = package.GetComponent<BoxContainer>();
         if (box != null)
         {
-            int payment = CheckBox(box);
+            int payment = CheckBox(box, out int stars);
             if (payment > 0 && EconomyManager.Instance != null)
             {
                 EconomyManager.Instance.AddRevenue(payment);
             }
+            if (ReputationManager.Instance != null)
+            {
+                ReputationManager.Instance.AddRating(stars);
+            }
             Debug.Log("[Delivery] Pago: " + payment);
         }
-
         PlaceBox(package);
     }
 
-    private int CheckBox(BoxContainer box)
+    private int CheckBox(BoxContainer box, out int stars)
     {
+        stars = 1;
         if (!box.HasStamp)
         {
             Debug.Log("[Delivery] La caja no tiene estampa");
@@ -97,12 +101,15 @@ public class DeliveryZone : NetworkBehaviour
         int fullPay = Mathf.RoundToInt((float)order.payment);
         if (errors == 0)
         {
+            stars = 5;
             return fullPay;
         } 
         if (errors == 1)
         {
+            stars = 3;
             return fullPay / 2;
-        } 
+        }
+        stars = 1;
         return 0;
     }
 
