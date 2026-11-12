@@ -4,13 +4,11 @@ using UnityEngine;
 public class PackableItem : NetworkBehaviour
 {
     [Header("Product Reference")]
-    public ProductData productData; 
+    public ProductData productData;
 
-    [Header("Item Configuration")]
-    public int itemSizeCost = 1;
     [Networked] public NetworkBool IsPacked { get; set; }
 
-    public void PackIntoBox(Transform contentParent, int loadIndex)
+    public void PackIntoBox(Transform contentParent, Vector3 worldPosition, Quaternion worldRotation)
     {
         IsPacked = true;
 
@@ -28,7 +26,7 @@ public class PackableItem : NetworkBehaviour
         }
 
         transform.SetParent(contentParent);
-        transform.localPosition = new Vector3(0, 0.05f * loadIndex, 0);
-        transform.localRotation = Quaternion.identity;
+        transform.position = worldPosition;
+        transform.rotation = worldRotation;
     }
 }
