@@ -101,6 +101,10 @@ public class GrabbableObject : NetworkBehaviour, IInteractable
                 rb.useGravity = true;
             }
             */
+            if (TryGetComponent(out PackableItem packable) && packable.IsPacked)
+            {
+                return;
+            }
             bool held = IsGrabbed && CurrentHolder != null;
             rb.isKinematic = held;
             rb.useGravity = !held;
