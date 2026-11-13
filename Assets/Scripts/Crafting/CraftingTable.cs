@@ -9,9 +9,8 @@ public class CraftingTable : NetworkBehaviour, IInteractable
     public CraftingRecipe[] availableRecipes; 
 
     [Header("Crafting Settings")]
+    public string stationName = "Crafting Station";
     public Transform snapPoint; 
-
-    
     [Networked, Capacity(4)] public NetworkLinkedList<int> PlacedIngredientIDs => default;
 
     [Networked] public NetworkBool IsProcessing { get; set; }
@@ -24,28 +23,28 @@ public class CraftingTable : NetworkBehaviour, IInteractable
         if (IsProcessing)
         {
             float time = ProcessTimer.RemainingTime(Runner) ?? 0f;
-            return $"Processing... {time:F1}s";
+            return $"{stationName} processing... {time:F1}s";
         }
 
         if (PlacedIngredientIDs.Count > 0)
         {
             List<CraftingRecipe> possible = GetPossibleRecipes();
 
-            if (possible.Count == 0) return "<color=red>Invalid combination. Missing or wrong item.</color>";
+            if (possible.Count == 0) return "<color=red>Invalid combination.</color>";
 
             foreach (CraftingRecipe p in possible)
             {
                 if (p.requiredIngredients.Length == PlacedIngredientIDs.Count)
                 {
-                    return $"Press [F] to craft: <color=yellow>{p.recipeName}</color>";
+                    return $"Press [F] to activate {stationName}: <color=yellow>{p.recipeName}</color>";
                 }
             }
 
             string possibleNames = string.Join(", ", possible.Select(r => r.recipeName));
-            return $"Items: {PlacedIngredientIDs.Count} | Possible: <color=cyan>{possibleNames}</color>";
+            return $"{stationName} | Items: {PlacedIngredientIDs.Count} | Possible: <color=cyan>{possibleNames}</color>";
         }
 
-        return "Press [F] to place ingredient";
+        return $"Press [F] to place ingredient in {stationName}";
     }
 
     public void OnInteract(PlayerRef interactor)
