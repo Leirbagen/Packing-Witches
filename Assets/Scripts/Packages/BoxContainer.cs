@@ -54,7 +54,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
         {
             return;
         }
-
+        /*
         GrabbableObject held = playerGrab.HeldObject;
         if (held.TryGetComponent(out Stamp stamp))
         {
@@ -63,6 +63,30 @@ public class BoxContainer : NetworkBehaviour, IInteractable
         else if (held.TryGetComponent(out PackableItem item))
         {
             TryPackItemAuto(playerGrab, item);
+        }
+        */
+        if (playerGrab.HeldObject.TryGetComponent(out Stamp stamp))
+        {
+            TryAttachStamp(playerGrab, stamp);
+        }
+    }
+
+    public void RequestPack(int x, int y, int rotation)
+    {
+        RPC_PackAt(Runner.LocalPlayer, x, y, rotation);
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_PackAt(PlayerRef interactor, int x, int y, int rotation)
+    {
+        PlayerGrab playerGrab = FindPlayerGrab(interactor);
+        if (playerGrab == null || !playerGrab.IsHolding || playerGrab.HeldObject == null)
+        {
+            return;
+        } 
+        if (playerGrab.HeldObject.TryGetComponent(out PackableItem item))
+        {
+            TryPackItem(playerGrab, item, x, y, rotation);
         }
     }
 
@@ -78,7 +102,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
         stamp.AttachToBox(stampAnchor != null ? stampAnchor : transform);
     }
 
-    // TEMPORAL: busca la primera celda libre donde quepa la pieza
+/*
     private void TryPackItemAuto(PlayerGrab playerGrab, PackableItem item)
     {
         if (item.IsPacked || item.productData == null) return;
@@ -101,22 +125,28 @@ public class BoxContainer : NetworkBehaviour, IInteractable
         }
         Debug.Log("[Packing] No hay espacio en la caja");
     }
-
-    // Esta es la que usará la interacción final (con celda y rotación elegidas)
+*/
+    
     private void TryPackItem(PlayerGrab playerGrab, PackableItem item, int x, int y, int rotation)
     {
-        if (item.IsPacked || item.productData == null) return;
+        if (item.IsPacked || item.productData == null)
+        {
+            return;
+        } 
 
         Vector2Int size = grid.GetSize(item.productData.footprint, rotation);
 
-        if (grid.Place(size, x, y) == -1) return;
+        if (grid.Place(size, x, y) == -1)
+        {
+            return;
+        } 
 
         playerGrab.RequestDrop();
         PackedItemIDs.Add(item.productData.id);
 
         Vector3 pos = grid.FootprintCenterWorld(size, x, y);
         Quaternion rot = grid.gridOrigin.rotation * Quaternion.Euler(0f, 90f * rotation, 0f);
-        item.PackIntoBox(contentParent, pos, rot);
+        item.PackIntoBox(Object, pos, rot);
     }
 
     private PlayerGrab FindPlayerGrab(PlayerRef playerRef)

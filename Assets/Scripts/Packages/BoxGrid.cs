@@ -7,7 +7,7 @@ public class BoxGrid : NetworkBehaviour
     public int height = 4;
     public float cellSize = 0.1f;
     public Transform gridOrigin;
-    [Networked, Capacity(64)] private NetworkArray<int> Cells => default;
+    [Networked, Capacity(128)] private NetworkArray<int> Cells => default;
     [Networked] private int NextPlacementId { get; set; } = 1;
     
     private int Index(int x, int y)

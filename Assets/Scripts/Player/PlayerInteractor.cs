@@ -8,11 +8,20 @@ public class PlayerInteractor : NetworkBehaviour
     public float interactionDistance = 3f;
     public LayerMask interactableLayer;
     private IInteractable currentInteractable;
+    public BoxContainer AimedBox { get; private set; }
+    public Vector3 AimedPoint { get; private set; }
 
     private void Update()
     {
-        if (!HasStateAuthority && !HasInputAuthority) return;
-        if (ShopTerminal.IsOpen) return;
+        AimedBox = null;
+        if (!HasStateAuthority && !HasInputAuthority)
+        {
+            return;
+        }
+        if (ShopTerminal.IsOpen)
+        {
+            return;
+        } 
 
         bool grabPressed = InputController.Instance.GetButtonDown(InputController.Input.GRAB);
         bool packPressed = InputController.Instance.GetButtonDown(InputController.Input.PACK);
@@ -63,7 +72,11 @@ public class PlayerInteractor : NetworkBehaviour
         {
             currentInteractable = validHit.collider.GetComponentInParent<IInteractable>();
             GrabbableObject grabbable = validHit.collider.GetComponentInParent<GrabbableObject>();
-
+            if (currentInteractable is BoxContainer box)
+            {
+                AimedBox = box;
+                AimedPoint = validHit.point;
+            }
             if (currentInteractable != null)
             {
                 string prompt = currentInteractable.GetInteractionPrompt();
