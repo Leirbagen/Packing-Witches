@@ -14,5 +14,6 @@ public enum InputButton
     run,
     grab,
     pack,
-    rest
+    rest,
+    rotate
 }
