@@ -21,7 +21,7 @@ public class PlayerInteractor : NetworkBehaviour
         if (ShopTerminal.IsOpen)
         {
             return;
-        } 
+        }
 
         bool grabPressed = InputController.Instance.GetButtonDown(InputController.Input.GRAB);
         bool packPressed = InputController.Instance.GetButtonDown(InputController.Input.PACK);
@@ -88,17 +88,20 @@ public class PlayerInteractor : NetworkBehaviour
                     bool isRestZone = currentInteractable is RestZone;
                     bool isCraftingTable = currentInteractable is CraftingTable;
 
+                    bool isCat = currentInteractable is CatController;
+                    bool isCatBowl = currentInteractable is CatBowl;
+
                     if (isRestZone && restPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
                     }
-                    else if ((isBoxContainer || isCraftingTable) && packPressed)
+                    else if ((isBoxContainer || isCraftingTable || isCat || isCatBowl) && packPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
                     }
-                    else if (!isBoxContainer && !isRestZone && !isCraftingTable && grabPressed)
+                    else if (!isBoxContainer && !isRestZone && !isCraftingTable && !isCat && !isCatBowl && grabPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
