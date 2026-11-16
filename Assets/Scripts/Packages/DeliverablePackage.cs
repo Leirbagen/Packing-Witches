@@ -13,4 +13,16 @@ public class DeliverablePackage : NetworkBehaviour
     {
         Grabbable = GetComponent<GrabbableObject>();
     }
+
+    public override void Render()
+    {
+        if (IsDelivered)
+        {
+            if (TryGetComponent(out Rigidbody rb) && !rb.isKinematic)
+            {
+                rb.isKinematic = true;
+                rb.useGravity = false;
+            }
+        }
+    }
 }
