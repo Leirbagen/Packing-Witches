@@ -13,27 +13,33 @@ public class DeliveryZone : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority)
+        {
+            return;
+        } 
 
         Collider[] hits = Physics.OverlapBox(transform.position, zoneExtents, transform.rotation, boxLayer);
-
         foreach (var hit in hits)
         {
-            if (hit.TryGetComponent(out DeliverablePackage package))
+            DeliverablePackage package = hit.GetComponentInParent<DeliverablePackage>();
+            if (!package.Grabbable.IsGrabbed && !package.IsDelivered)
             {
-                if (!package.Grabbable.IsGrabbed && !package.IsDelivered)
-                {
-                    ProcessDelivery(package);
-                }
+                ProcessDelivery(package);
             }
         }
     }
+
+
 
     private void ProcessDelivery(DeliverablePackage package)
     {
         package.IsDelivered = true;
 
         BoxContainer box = package.GetComponent<BoxContainer>();
+        if (box == null)
+        {
+            box = package.GetComponentInChildren<BoxContainer>();
+        } 
         if (box != null)
         {
             int payment = CheckBox(box, out int stars);

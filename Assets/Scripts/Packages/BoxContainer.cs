@@ -99,7 +99,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
         playerGrab.RequestDrop();
         HasStamp = true;
         StampDestinationId = stamp.destination.id;
-        stamp.AttachToBox(stampAnchor != null ? stampAnchor : transform);
+        stamp.AttachToBox(stampAnchor != null ? stampAnchor : transform, Object);
     }
 
 /*

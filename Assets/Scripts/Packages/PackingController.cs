@@ -12,9 +12,12 @@ public class PackingController : NetworkBehaviour
 
     public override void Spawned()
     {
-        if (!HasInputAuthority) return;
+        if (!HasInputAuthority)
+        {
+            return;
+        } 
 
-        // Rectángulo de vista previa: solo local, sin red
+        //preview
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         Destroy(quad.GetComponent<Collider>());
         previewRenderer = quad.GetComponent<Renderer>();
@@ -25,12 +28,16 @@ public class PackingController : NetworkBehaviour
 
     private void Update()
     {
-        if (!HasInputAuthority || preview == null) return;
-
+        if (!HasInputAuthority || preview == null)
+        {
+            return;
+        } 
         preview.gameObject.SetActive(false);
-
-        if (ShopTerminal.IsOpen) return;
-
+        if (ShopTerminal.IsOpen)
+        {
+            return;
+        } 
+        bool rotatePressed = InputController.Instance.GetButtonDown(InputController.Input.ROTATE);
         if (playerGrab == null || !playerGrab.IsHolding || playerGrab.HeldObject == null)
         {
             rotation = 0;
@@ -38,24 +45,31 @@ public class PackingController : NetworkBehaviour
         }
 
         PackableItem item = playerGrab.HeldObject.GetComponent<PackableItem>();
-        if (item == null || item.IsPacked || item.productData == null) return;
+        if (item == null || item.IsPacked || item.productData == null)
+        {
+            return;
+        } 
 
         BoxContainer box = interactor.AimedBox;
-        if (box == null || box.grid == null) return;
+        if (box == null || box.grid == null)
+        {
+            return;
+        } 
 
         BoxGrid grid = box.grid;
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (rotatePressed)
         {
             rotation = (rotation + 1) % 4;
         }
 
-        // Celda apuntada (solo usa X y Z, así que apuntar a una pared elige la celda de abajo)
+        
+        //Aimed cell
         Vector3 local = grid.gridOrigin.InverseTransformPoint(interactor.AimedPoint);
         int cellX = Mathf.FloorToInt(local.x / grid.cellSize);
         int cellY = Mathf.FloorToInt(local.z / grid.cellSize);
 
-        // Centrar la pieza en la celda apuntada y mantenerla dentro de la rejilla
+
         Vector2Int size = grid.GetSize(item.productData.footprint, rotation);
         int x = Mathf.Clamp(cellX - size.x / 2, 0, Mathf.Max(0, grid.width - size.x));
         int y = Mathf.Clamp(cellY - size.y / 2, 0, Mathf.Max(0, grid.height - size.y));
@@ -63,8 +77,7 @@ public class PackingController : NetworkBehaviour
         bool valid = grid.CanPlace(size, x, y);
         ShowPreview(grid, size, x, y, valid);
 
-        if (valid && InputController.Instance != null
-            && InputController.Instance.GetButtonDown(InputController.Input.PACK))
+        if (valid && InputController.Instance != null && InputController.Instance.GetButtonDown(InputController.Input.PACK))
         {
             box.RequestPack(x, y, rotation);
             rotation = 0;

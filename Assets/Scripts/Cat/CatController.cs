@@ -1,6 +1,7 @@
 using Fusion;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI; // NUEVO: Necesario para usar Sliders
 
 public enum CatState { Roaming, Annoying, GoingToFood, Eating }
 
@@ -9,19 +10,23 @@ public class CatController : NetworkBehaviour, IInteractable
 {
     [Header("Cat Needs")]
     public float timeUntilHungry = 120f;
-    public float eatingDuration = 5f; 
+    public float eatingDuration = 5f;
 
     [Header("Roaming Settings")]
-    public float roamRadius = 10f; 
-    public float roamWaitTime = 3f; 
+    public float roamRadius = 10f;
+    public float roamWaitTime = 3f;
 
     [Header("Targets")]
     public Transform annoyTargetPoint;
-    public Transform foodBowlTarget; 
+    public Transform foodBowlTarget;
+
+    [Header("UI (Visuals)")]
+    public Slider hungerSlider;       
+    public Transform canvasTransform; 
 
     [Networked] public CatState CurrentState { get; set; }
     [Networked] public TickTimer HungerTimer { get; set; }
-    [Networked] public TickTimer ActionTimer { get; set; } 
+    [Networked] public TickTimer ActionTimer { get; set; }
 
     private NavMeshAgent agent;
 
@@ -51,10 +56,7 @@ public class CatController : NetworkBehaviour, IInteractable
                 {
                     CurrentState = CatState.Annoying;
                     RPC_BroadcastCatMessage("<color=red>Cat is hungry!</color>");
-                    if (annoyTargetPoint != null)
-                    {
-                        agent.SetDestination(annoyTargetPoint.position);
-                    }
+                    if (annoyTargetPoint != null) agent.SetDestination(annoyTargetPoint.position);
                     break;
                 }
 
@@ -76,17 +78,14 @@ public class CatController : NetworkBehaviour, IInteractable
                 break;
 
             case CatState.Annoying:
-                if (!agent.pathPending && agent.remainingDistance < 0.5f)
-                {
-                    // Lógica futura para empujar objetos
-                }
+                if (!agent.pathPending && agent.remainingDistance < 0.5f) { /* Empujar objetos */ }
                 break;
 
             case CatState.GoingToFood:
                 if (!agent.pathPending && agent.remainingDistance < 0.5f)
                 {
                     CurrentState = CatState.Eating;
-                    ActionTimer = TickTimer.CreateFromSeconds(Runner, eatingDuration); // Empieza a comer
+                    ActionTimer = TickTimer.CreateFromSeconds(Runner, eatingDuration);
                     RPC_BroadcastCatMessage("*Nom nom nom...*");
                 }
                 break;
@@ -95,10 +94,32 @@ public class CatController : NetworkBehaviour, IInteractable
                 if (ActionTimer.Expired(Runner))
                 {
                     CurrentState = CatState.Roaming;
-                    HungerTimer = TickTimer.CreateFromSeconds(Runner, timeUntilHungry); // Se reinicia su hambre
+                    HungerTimer = TickTimer.CreateFromSeconds(Runner, timeUntilHungry);
                     RPC_BroadcastCatMessage("<color=green>Cat is full and happy.</color>");
                 }
                 break;
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (Runner != null && Runner.IsRunning && hungerSlider != null)
+        {
+            float remaining = HungerTimer.RemainingTime(Runner) ?? 0f;
+
+            if (CurrentState == CatState.Eating || CurrentState == CatState.GoingToFood)
+            {
+                hungerSlider.value = 1f;
+            }
+            else
+            {
+                hungerSlider.value = remaining / timeUntilHungry;
+            }
+        }
+
+        if (canvasTransform != null && Camera.main != null)
+        {
+            canvasTransform.LookAt(canvasTransform.position + Camera.main.transform.forward);
         }
     }
 
@@ -124,20 +145,11 @@ public class CatController : NetworkBehaviour, IInteractable
         return $"Press [F] to pet the cat (Hunger: {time:F0}s)";
     }
 
-    public void OnInteract(PlayerRef interactor)
-    {
-        RPC_InteractWithCat(interactor);
-    }
+    public void OnInteract(PlayerRef interactor) { RPC_InteractWithCat(interactor); }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    private void RPC_InteractWithCat(PlayerRef interactor)
-    {
-        RPC_BroadcastCatMessage("*Purr purr...*");
-    }
+    private void RPC_InteractWithCat(PlayerRef interactor) { RPC_BroadcastCatMessage("*Purr purr...*"); }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    private void RPC_BroadcastCatMessage(string msg)
-    {
-        Debug.Log($"[Cat] {msg}");
-    }
+    private void RPC_BroadcastCatMessage(string msg) { Debug.Log($"[Cat] {msg}"); }
 }

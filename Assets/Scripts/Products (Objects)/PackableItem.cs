@@ -14,35 +14,41 @@ public class PackableItem : NetworkBehaviour
 
     public void PackIntoBox(NetworkObject box, Vector3 worldPosition, Quaternion worldRotation)
     {
+        RPC_PackIntoBox(box, worldPosition, worldRotation);
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_PackIntoBox(NetworkObject box, Vector3 worldPosition, Quaternion worldRotation)
+    {
         PackedParent = box;
         PackedLocalPos = box.transform.InverseTransformPoint(worldPosition);
         PackedLocalRot = Quaternion.Inverse(box.transform.rotation) * worldRotation;
         IsPacked = true;
     }
 
-/*
-    public void PackIntoBox(Transform contentParent, Vector3 worldPosition, Quaternion worldRotation)
-    {
-        IsPacked = true;
-
-        if (TryGetComponent(out NetworkTransform netTransform))
+    /*
+        public void PackIntoBox(Transform contentParent, Vector3 worldPosition, Quaternion worldRotation)
         {
-            netTransform.enabled = false;
-        }
+            IsPacked = true;
 
-        if (TryGetComponent(out Rigidbody rb))
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-        }
+            if (TryGetComponent(out NetworkTransform netTransform))
+            {
+                netTransform.enabled = false;
+            }
 
-        transform.SetParent(contentParent);
-        transform.position = worldPosition;
-        transform.rotation = worldRotation;
-    }
-    */
+            if (TryGetComponent(out Rigidbody rb))
+            {
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            transform.SetParent(contentParent);
+            transform.position = worldPosition;
+            transform.rotation = worldRotation;
+        }
+        */
     private void DisablePhysics()
     {
         physicsDisabled = true;

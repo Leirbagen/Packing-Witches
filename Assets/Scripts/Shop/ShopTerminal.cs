@@ -6,12 +6,12 @@ public class ShopTerminal : MonoBehaviour, IInteractable
     [SerializeField] private GameObject shopPanel;
     public static bool IsOpen { get; private set; }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
         shopPanel.SetActive(false);
         IsOpen = false;
     }
+
     public string GetInteractionPrompt()
     {
         return "Press F to open the shop";
@@ -22,7 +22,7 @@ public class ShopTerminal : MonoBehaviour, IInteractable
         if (IsOpen)
         {
             return;
-        } 
+        }
         Open();
     }
 
@@ -32,6 +32,8 @@ public class ShopTerminal : MonoBehaviour, IInteractable
         shopPanel.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        ToggleRoomCode(false);
     }
 
     public void Close()
@@ -40,6 +42,8 @@ public class ShopTerminal : MonoBehaviour, IInteractable
         shopPanel.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        ToggleRoomCode(true);
     }
 
     private void OnDisable()
@@ -47,6 +51,20 @@ public class ShopTerminal : MonoBehaviour, IInteractable
         if (IsOpen)
         {
             Close();
-        } 
+        }
+    }
+
+    private void ToggleRoomCode(bool show)
+    {
+        GameObject roomCodeObj = GameObject.Find("RoomCodeText");
+
+        if (roomCodeObj != null)
+        {
+            var textComp = roomCodeObj.GetComponent<TMPro.TextMeshProUGUI>();
+            if (textComp != null)
+            {
+                textComp.enabled = show;
+            }
+        }
     }
 }
