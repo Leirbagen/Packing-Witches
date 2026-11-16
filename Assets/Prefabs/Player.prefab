@@ -204,8 +204,8 @@ CharacterController:
   m_Height: 2
   m_Radius: 0.5
   m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_StepOffset: 0.1
+  m_SkinWidth: 0.05
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &181883619528980028
@@ -223,8 +223,8 @@ MonoBehaviour:
   _stateAuthorityChangeErrorCorrectionDelta: 0
   gravity: -20
   jumpImpulse: 8
-  acceleration: 8
-  braking: 7
+  acceleration: 20
+  braking: 30
   maxSpeed: 2
   rotationSpeed: 15
 --- !u!114 &3825464125575171725
