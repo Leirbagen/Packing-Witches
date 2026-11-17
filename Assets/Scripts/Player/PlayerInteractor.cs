@@ -87,21 +87,21 @@ public class PlayerInteractor : NetworkBehaviour
                     bool isBoxContainer = currentInteractable is BoxContainer;
                     bool isRestZone = currentInteractable is RestZone;
                     bool isCraftingTable = currentInteractable is CraftingTable;
-
                     bool isCat = currentInteractable is CatController;
                     bool isCatBowl = currentInteractable is CatBowl;
+                    bool isCamera = currentInteractable is RecordingCamera;
 
                     if (isRestZone && restPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
                     }
-                    else if ((isBoxContainer || isCraftingTable || isCat || isCatBowl) && packPressed)
+                    else if ((isBoxContainer || isCraftingTable || isCat || isCatBowl || isCamera) && packPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
                     }
-                    else if (!isBoxContainer && !isRestZone && !isCraftingTable && !isCat && !isCatBowl && grabPressed)
+                    else if (!isBoxContainer && !isRestZone && !isCraftingTable && !isCat && !isCatBowl && !isCamera && grabPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
