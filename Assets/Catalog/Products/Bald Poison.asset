@@ -16,3 +16,4 @@ MonoBehaviour:
   productName: Bald Poison
   icon: {fileID: 0}
   price: 15
+  footprint: {x: 2, y: 2}

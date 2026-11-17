@@ -16,3 +16,4 @@ MonoBehaviour:
   productName: Good Luck Potion
   icon: {fileID: 0}
   price: 35
+  footprint: {x: 1, y: 2}
