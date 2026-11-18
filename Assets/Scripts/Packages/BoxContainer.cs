@@ -5,7 +5,6 @@ public class BoxContainer : NetworkBehaviour, IInteractable
 {
     [Header("Box Configuration")]
     public string boxName = "Small Box";
-
     [Networked, Capacity(20)] public NetworkLinkedList<int> PackedItemIDs => default;
     [Networked] public NetworkBool HasStamp { get; set; }
     [Networked] public int StampDestinationId { get; set; } = -1;
@@ -14,7 +13,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
     public BoxGrid grid;
     public Transform contentParent;
     public Transform stampAnchor;
-
+    
     public string GetInteractionPrompt()
     {
         PlayerGrab localGrab = FindLocalPlayerGrab();
@@ -25,7 +24,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
             {
                 if (!HasStamp && !stamp.IsAttached && stamp.destination != null)
                 {
-                    return $"Press [F] to put label ({stamp.destination.destiny}) on {boxName}";
+                    return $"Press [PACK] to put label ({stamp.destination.destiny}) on {boxName}";
                 }
                 return string.Empty;
             }
@@ -34,7 +33,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
             {
                 if (!item.IsPacked && item.productData != null)
                 {
-                    return $"Press [F] to pack {item.productData.productName} into {boxName}";
+                    return $"Press [F] to place {item.productData.productName} (R to rotate)";
                 }
             }
         }
@@ -54,39 +53,30 @@ public class BoxContainer : NetworkBehaviour, IInteractable
         {
             return;
         }
-        /*
-        GrabbableObject held = playerGrab.HeldObject;
-        if (held.TryGetComponent(out Stamp stamp))
-        {
-            TryAttachStamp(playerGrab, stamp);
-        }
-        else if (held.TryGetComponent(out PackableItem item))
-        {
-            TryPackItemAuto(playerGrab, item);
-        }
-        */
+
         if (playerGrab.HeldObject.TryGetComponent(out Stamp stamp))
         {
             TryAttachStamp(playerGrab, stamp);
         }
     }
 
-    public void RequestPack(int x, int y, int rotation)
+    public void RequestPack(int x, int y, int rotation, Vector2Int size)
     {
-        RPC_PackAt(Runner.LocalPlayer, x, y, rotation);
+        RPC_PackAt(Runner.LocalPlayer, x, y, rotation, size.x, size.y);
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    private void RPC_PackAt(PlayerRef interactor, int x, int y, int rotation)
+    private void RPC_PackAt(PlayerRef interactor, int x, int y, int rotation, int sizeX, int sizeY)
     {
         PlayerGrab playerGrab = FindPlayerGrab(interactor);
         if (playerGrab == null || !playerGrab.IsHolding || playerGrab.HeldObject == null)
         {
             return;
-        } 
+        }
+
         if (playerGrab.HeldObject.TryGetComponent(out PackableItem item))
         {
-            TryPackItem(playerGrab, item, x, y, rotation);
+            TryPackItem(playerGrab, item, x, y, rotation, new Vector2Int(sizeX, sizeY));
         }
     }
 
@@ -99,47 +89,47 @@ public class BoxContainer : NetworkBehaviour, IInteractable
         playerGrab.RequestDrop();
         HasStamp = true;
         StampDestinationId = stamp.destination.id;
-        stamp.AttachToBox(stampAnchor != null ? stampAnchor : transform, Object);
-    }
-
-/*
-    private void TryPackItemAuto(PlayerGrab playerGrab, PackableItem item)
-    {
-        if (item.IsPacked || item.productData == null) return;
-
-        for (int rotation = 0; rotation < 2; rotation++)
+        Transform anchor;
+        if(stampAnchor != null)
         {
-            Vector2Int size = grid.GetSize(item.productData.footprint, rotation);
-
-            for (int y = 0; y < grid.height; y++)
-            {
-                for (int x = 0; x < grid.width; x++)
-                {
-                    if (grid.CanPlace(size, x, y))
-                    {
-                        TryPackItem(playerGrab, item, x, y, rotation);
-                        return;
-                    }
-                }
-            }
+            anchor = stampAnchor;
         }
-        Debug.Log("[Packing] No hay espacio en la caja");
+        else
+        {
+            anchor = transform;
+        }
+        stamp.AttachToBox(anchor, Object);
     }
-*/
-    
-    private void TryPackItem(PlayerGrab playerGrab, PackableItem item, int x, int y, int rotation)
+
+    private void TryPackItem(PlayerGrab playerGrab, PackableItem item, int x, int y, int rotation, Vector2Int size)
     {
         if (item.IsPacked || item.productData == null)
         {
             return;
-        } 
+        }
+        Vector2Int fp = item.productData.footprint;
 
-        Vector2Int size = grid.GetSize(item.productData.footprint, rotation);
+        bool normal = false;
+        if (size.x == fp.x && size.y == fp.y)
+        {
+            normal = true;
+        }
+
+        bool swapped = false;
+        if (size.x == fp.y && size.y == fp.x)
+        {
+            swapped = true;
+        }
+
+        if (!normal && !swapped)
+        {
+            return;
+        }
 
         if (grid.Place(size, x, y) == -1)
         {
             return;
-        } 
+        }
 
         playerGrab.RequestDrop();
         PackedItemIDs.Add(item.productData.id);
@@ -152,10 +142,17 @@ public class BoxContainer : NetworkBehaviour, IInteractable
     private PlayerGrab FindPlayerGrab(PlayerRef playerRef)
     {
         NetworkObject playerObj = Runner.GetPlayerObject(playerRef);
-        if (playerObj != null && playerObj.TryGetComponent(out PlayerGrab playerGrab)) return playerGrab;
+        if (playerObj != null && playerObj.TryGetComponent(out PlayerGrab playerGrab))
+        {
+            return playerGrab;
+        }
+
         foreach (var grabber in FindObjectsByType<PlayerGrab>(FindObjectsSortMode.None))
         {
-            if (grabber.Object != null && grabber.Object.InputAuthority == playerRef) return grabber;
+            if (grabber.Object != null && grabber.Object.InputAuthority == playerRef)
+            {
+                return grabber;
+            }
         }
         return null;
     }
@@ -164,7 +161,10 @@ public class BoxContainer : NetworkBehaviour, IInteractable
     {
         foreach (var grabber in FindObjectsByType<PlayerGrab>(FindObjectsSortMode.None))
         {
-            if (grabber.Object != null && grabber.Object.HasInputAuthority) return grabber;
+            if (grabber.Object != null && grabber.Object.HasInputAuthority)
+            {
+                return grabber;
+            }
         }
         return null;
     }
