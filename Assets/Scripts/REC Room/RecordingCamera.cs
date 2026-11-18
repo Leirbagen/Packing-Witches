@@ -15,7 +15,7 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
     [Header("UI Settings")]
     public GameObject playerHUD;
     public GameObject recCanvas;
-    public TextMeshProUGUI timerText; // Si usas TextMeshPro, cambia 'Text' por 'TMPro.TextMeshProUGUI'
+    public TextMeshProUGUI timerText;
 
     [Networked] public NetworkBool IsRecording { get; set; }
     [Networked] public TickTimer RecordingTimer { get; set; }
@@ -30,19 +30,25 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
         }
 
         PackableItem item = displayZone.GetDisplayedItem();
-        if (item != null && item.productData != null)
+
+        if (item)
         {
             return $"Press [F] to record promo for {item.productData.productName}";
         }
+
         return "Place a product on the recording table first";
     }
 
     public void OnInteract(PlayerRef interactor)
     {
-        if (IsRecording) return;
+        if (IsRecording)
+        {
+            return;
+        }
 
         PackableItem item = displayZone.GetDisplayedItem();
-        if (item != null)
+
+        if (item)
         {
             RPC_StartRecording(interactor);
         }
@@ -60,7 +66,10 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority)
+        {
+            return;
+        }
 
         if (IsRecording && RecordingTimer.Expired(Runner))
         {
@@ -71,22 +80,16 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
 
     private void Update()
     {
-        if (IsRecording && recCanvas != null && recCanvas.activeSelf)
+        if (IsRecording && recCanvas.activeSelf)
         {
             float time = RecordingTimer.RemainingTime(Runner) ?? 0f;
-            if (timerText != null)
-            {
-                timerText.text = $"REC 00:0{time:F0}";
-            }
+            timerText.text = $"REC 00:0{time:F0}";
         }
     }
 
     private void FinishRecording()
     {
-        if (EconomyManager.Instance != null)
-        {
-            EconomyManager.Instance.AddRevenue(10);
-        }
+        EconomyManager.Instance.AddRevenue(10);
 
         RPC_BroadcastRecordingState(false, CurrentCameraman);
         CurrentCameraman = PlayerRef.None;
@@ -95,27 +98,33 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     private void RPC_BroadcastRecordingState(bool isStarting, PlayerRef interactor)
     {
-        if (isStarting) Debug.Log("<color=magenta>[Recording] Camera is rolling </color>");
-        else Debug.Log("<color=magenta>[Recording] Video uploaded </color>");
+        if (isStarting)
+        {
+            Debug.Log("<color=magenta>[Recording] Camera is rolling </color>");
+        }
+        else
+        {
+            Debug.Log("<color=magenta>[Recording] Video uploaded </color>");
+        }
 
         if (interactor == Runner.LocalPlayer)
         {
             if (isStarting)
             {
                 storedPlayerCamera = Camera.main;
-                if (storedPlayerCamera != null) storedPlayerCamera.enabled = false;
-                if (tripodCamera != null) tripodCamera.gameObject.SetActive(true);
+                storedPlayerCamera.enabled = false;
+                tripodCamera.gameObject.SetActive(true);
 
-                if (playerHUD != null) playerHUD.SetActive(false);
-                if (recCanvas != null) recCanvas.SetActive(true);
+                playerHUD.SetActive(false);
+                recCanvas.SetActive(true);
             }
             else
             {
-                if (tripodCamera != null) tripodCamera.gameObject.SetActive(false);
-                if (storedPlayerCamera != null) storedPlayerCamera.enabled = true;
+                tripodCamera.gameObject.SetActive(false);
+                storedPlayerCamera.enabled = true;
 
-                if (playerHUD != null) playerHUD.SetActive(true);
-                if (recCanvas != null) recCanvas.SetActive(false);
+                playerHUD.SetActive(true);
+                recCanvas.SetActive(false);
             }
         }
     }
