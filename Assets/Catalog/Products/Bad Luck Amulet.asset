@@ -16,3 +16,4 @@ MonoBehaviour:
   productName: Bad Luck Amulet
   icon: {fileID: 0}
   price: 20
+  footprint: {x: 2, y: 2}
