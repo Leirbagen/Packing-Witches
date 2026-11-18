@@ -47,7 +47,6 @@ GameObject:
   - component: {fileID: 3178133791116648249}
   - component: {fileID: 181883619528980028}
   - component: {fileID: 3825464125575171725}
-  - component: {fileID: -1819207962223741412}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -179,7 +178,6 @@ MonoBehaviour:
   - {fileID: 181883619528980028}
   - {fileID: 7017573524452787177}
   - {fileID: 3825464125575171725}
-  - {fileID: -1819207962223741412}
   - {fileID: 5142851170805888121}
   - {fileID: 1192922955836407425}
   ForceRemoteRenderTimeframe: 0
@@ -243,20 +241,6 @@ MonoBehaviour:
   _IsHolding:
     RawValue: 0
   _HeldObject: {fileID: 0}
---- !u!114 &-1819207962223741412
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4244672607429688699}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2473da5d8a32e947900e1059e88dd95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PackingController
-  interactor: {fileID: 5142851170805888121}
-  playerGrab: {fileID: 3825464125575171725}
 --- !u!1 &5720533962793693206
 GameObject:
   m_ObjectHideFlags: 0

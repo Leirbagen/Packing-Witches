@@ -12,7 +12,7 @@ public class ProductDisplayZone : NetworkBehaviour
         Collider[] hits = Physics.OverlapBox(transform.position, zoneExtents, transform.rotation, itemLayer);
         foreach (var hit in hits)
         {
-            if (hit.TryGetComponent(out PackableItem item) && !item.IsPacked)
+            if (hit.TryGetComponent(out PackableItem item)/* && !item.IsPacked*/)
             {
                 if (item.TryGetComponent(out GrabbableObject grabbable) && !grabbable.IsGrabbed)
                 {
