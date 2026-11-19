@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
@@ -9,6 +9,7 @@ public class DeliveryZone : NetworkBehaviour
     public Transform placementPoint;
     public Vector3 boxSpacing = new Vector3(0.6f, 0f, 0.6f);
     public int boxesPerRow = 3;
+    public WorldPromptUI worldPrompt;
     [Networked] public int DeliveredCount { get; set; }
 
     public override void FixedUpdateNetwork()
@@ -45,6 +46,7 @@ public class DeliveryZone : NetworkBehaviour
             int payment = CheckBox(box, out int stars);
             if (payment > 0 && EconomyManager.Instance != null)
             {
+                RPC_ShowDeliveryMessage($"<color=green>Delivered! +${payment} ({stars})</color>");
                 EconomyManager.Instance.AddRevenue(payment);
             }
             if (ReputationManager.Instance != null)
@@ -61,7 +63,7 @@ public class DeliveryZone : NetworkBehaviour
         stars = 1;
         if (!box.HasStamp)
         {
-            Debug.Log("[Delivery] La caja no tiene estampa");
+            RPC_ShowDeliveryMessage("<color=red>Missing stamp!</color>");
             return 0;
         }
         var orders = OrderManager.Instance.ReceivedOrders;
@@ -138,6 +140,12 @@ public class DeliveryZone : NetworkBehaviour
         }
 
         DeliveredCount++;
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_ShowDeliveryMessage(string msg)
+    {
+        worldPrompt.ShowTemporaryMessage(msg, 3f);
     }
 
     private void OnDrawGizmos()
