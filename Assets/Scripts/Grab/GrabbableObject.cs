@@ -1,4 +1,3 @@
-
 using Fusion;
 using UnityEngine;
 
@@ -21,7 +20,14 @@ public class GrabbableObject : NetworkBehaviour, IInteractable
 
     public string GetInteractionPrompt()
     {
-        return IsGrabbed ? "" : "Press E to grab";
+        if (IsGrabbed)
+        {
+            return "";
+        }
+        else
+        {
+            return "Press E to grab";
+        }
     }
 
     public void OnInteract(PlayerRef interactor)
