@@ -14,7 +14,11 @@ public class ShopTerminal : MonoBehaviour, IInteractable
 
     public string GetInteractionPrompt()
     {
-        return "Press F to open the shop";
+        if (IsOpen)
+        {
+            return string.Empty;
+        }
+        return "Press [E] to open the shop";
     }
 
     public void OnInteract(PlayerRef interactor)

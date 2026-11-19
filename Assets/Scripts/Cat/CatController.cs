@@ -20,10 +20,10 @@ public class CatController : NetworkBehaviour, IInteractable
     public Transform annoyTargetPoint;
     public Transform foodBowlTarget;
 
-    [Header("UI (Visuals)")]
+    [Header("UI")]
     public Slider hungerSlider;       
-    public Transform canvasTransform; 
-
+    public Transform canvasTransform;
+    public WorldPromptUI worldPrompt;
     [Networked] public CatState CurrentState { get; set; }
     [Networked] public TickTimer HungerTimer { get; set; }
     [Networked] public TickTimer ActionTimer { get; set; }
@@ -55,8 +55,11 @@ public class CatController : NetworkBehaviour, IInteractable
                 if (HungerTimer.Expired(Runner))
                 {
                     CurrentState = CatState.Annoying;
-                    RPC_BroadcastCatMessage("<color=red>Cat is hungry!</color>");
-                    if (annoyTargetPoint != null) agent.SetDestination(annoyTargetPoint.position);
+                    if (annoyTargetPoint != null)
+                    {
+                        agent.SetDestination(annoyTargetPoint.position);
+                    }
+                    RPC_BroadcastCatMessage("<color=#FF4444>Cat is hungry!</color>");
                     break;
                 }
 
@@ -95,7 +98,7 @@ public class CatController : NetworkBehaviour, IInteractable
                 {
                     CurrentState = CatState.Roaming;
                     HungerTimer = TickTimer.CreateFromSeconds(Runner, timeUntilHungry);
-                    RPC_BroadcastCatMessage("<color=green>Cat is full and happy.</color>");
+                    RPC_BroadcastCatMessage("<color=#44FF44>Cat is full and happy.</color>");
                 }
                 break;
         }
@@ -131,7 +134,7 @@ public class CatController : NetworkBehaviour, IInteractable
         {
             CurrentState = CatState.GoingToFood;
             agent.SetDestination(foodBowlTarget.position);
-            RPC_BroadcastCatMessage("<color=yellow>Cat noticed the food and is coming!</color>");
+            RPC_BroadcastCatMessage("<color=#FFFF00>Cat noticed the food and is coming!</color>");
         }
     }
 
@@ -148,8 +151,14 @@ public class CatController : NetworkBehaviour, IInteractable
     public void OnInteract(PlayerRef interactor) { RPC_InteractWithCat(interactor); }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    private void RPC_InteractWithCat(PlayerRef interactor) { RPC_BroadcastCatMessage("*Purr purr...*"); }
+    private void RPC_InteractWithCat(PlayerRef interactor) 
+    {
+        RPC_BroadcastCatMessage("*Purr purr...*"); 
+    }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    private void RPC_BroadcastCatMessage(string msg) { Debug.Log($"[Cat] {msg}"); }
+    private void RPC_BroadcastCatMessage(string msg)
+    {
+        worldPrompt.ShowTemporaryMessage(msg);
+    }
 }

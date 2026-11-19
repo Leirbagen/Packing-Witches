@@ -10,7 +10,9 @@ public class CraftingTable : NetworkBehaviour, IInteractable
 
     [Header("Crafting Settings")]
     public string stationName = "Crafting Station";
-    public Transform snapPoint; 
+    public Transform snapPoint;
+
+    public WorldPromptUI worldPrompt;
     [Networked, Capacity(4)] public NetworkLinkedList<int> PlacedIngredientIDs => default;
 
     [Networked] public NetworkBool IsProcessing { get; set; }
@@ -30,18 +32,18 @@ public class CraftingTable : NetworkBehaviour, IInteractable
         {
             List<CraftingRecipe> possible = GetPossibleRecipes();
 
-            if (possible.Count == 0) return "<color=red>Invalid combination.</color>";
+            if (possible.Count == 0) return "<color=#FF4444>Invalid combination.</color>";
 
             foreach (CraftingRecipe p in possible)
             {
                 if (p.requiredIngredients.Length == PlacedIngredientIDs.Count)
                 {
-                    return $"Press [F] to activate {stationName}: <color=yellow>{p.recipeName}</color>";
+                    return $"Press [F] to activate {stationName}: <color=#FFFF00>{p.recipeName}</color>";
                 }
             }
 
             string possibleNames = string.Join(", ", possible.Select(r => r.recipeName));
-            return $"{stationName} | Items: {PlacedIngredientIDs.Count} | Possible: <color=cyan>{possibleNames}</color>";
+            return $"{stationName} | Items: {PlacedIngredientIDs.Count} | Possible: <color=#00FFFF>{possibleNames}</color>";
         }
 
         return $"Press [F] to place ingredient in {stationName}";
@@ -85,7 +87,7 @@ public class CraftingTable : NetworkBehaviour, IInteractable
 
                 if (!isIngredientValid)
                 {
-                    RPC_BroadcastMessage($"<color=orange>[Crafting] this product does not have a recipe</color>");
+                    RPC_BroadcastMessage($"<color=#FFA500>[Crafting] this product does not have a recipe</color>");
                     return; 
                 }
 
@@ -96,8 +98,6 @@ public class CraftingTable : NetworkBehaviour, IInteractable
                     GrabbableObject itemToDestroy = playerGrab.HeldObject;
                     playerGrab.RequestDrop();
                     Runner.Despawn(itemToDestroy.Object);
-
-                    Debug.Log($"<color=white>[Crafting] Ingredient added .</color>");
                 }
             }
         }
@@ -155,12 +155,12 @@ public class CraftingTable : NetworkBehaviour, IInteractable
                 ProcessTimer = TickTimer.CreateFromSeconds(Runner, recipe.processTime);
                 currentResultPrefab = recipe.resultPrefab;
 
-                RPC_BroadcastMessage($"<color=cyan>[Crafting] Started crafting: {recipe.recipeName}</color>");
+                RPC_BroadcastMessage($"<color=#00FFFF>[Crafting] Started crafting: {recipe.recipeName}</color>");
                 return;
             }
         }
 
-        RPC_BroadcastMessage("<color=red>[Crafting] Invalid combination</color>");
+        RPC_BroadcastMessage("<color=#FF4444>[Crafting] Invalid combination</color>");
     }
 
     private bool MatchRecipe(CraftingRecipe recipe)
@@ -196,7 +196,7 @@ public class CraftingTable : NetworkBehaviour, IInteractable
             if (currentResultPrefab.IsValid)
             {
                 Runner.Spawn(currentResultPrefab, snapPoint.position, snapPoint.rotation);
-                RPC_BroadcastMessage("<color=green>[Crafting] Product ready!</color>");
+                RPC_BroadcastMessage("<color=#44FF44>[Crafting] Product ready!</color>");
             }
         }
     }
@@ -204,6 +204,6 @@ public class CraftingTable : NetworkBehaviour, IInteractable
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     private void RPC_BroadcastMessage(string msg)
     {
-        Debug.Log(msg);
+        worldPrompt.ShowTemporaryMessage(msg);
     }
 }
