@@ -53,6 +53,12 @@ public class PlayerGrab : NetworkBehaviour
             IsHolding = true;
 
             ToggleCollisions(grabbable, true);
+            BoxContainer box = obj.GetComponent<BoxContainer>();
+
+            if (box != null)
+            {
+                box.BeginTransport();
+            }
         }
     }
 
@@ -69,6 +75,11 @@ public class PlayerGrab : NetworkBehaviour
         GrabbableObject grabbable = obj.GetComponent<GrabbableObject>();
         if (grabbable != null)
         {
+            BoxContainer box = obj.GetComponent<BoxContainer>();
+            if (box != null)
+            {
+                box.EndTransport();
+            }
             ToggleCollisions(grabbable, false);
             grabbable.IsGrabbed = false;
             grabbable.CurrentHolder = null;
