@@ -1,3 +1,4 @@
+
 using Fusion;
 using UnityEngine;
 
@@ -5,80 +6,96 @@ public class PackableItem : NetworkBehaviour
 {
     [Header("Product Reference")]
     public ProductData productData;
-    [Networked] public NetworkBool IsPacked { get; set; }
-    [Networked] public NetworkObject PackedParent { get; set; }
-    [Networked] public Vector3 PackedLocalPos { get; set; }
-    [Networked] public Quaternion PackedLocalRot { get; set; }
 
-    private bool physicsDisabled;
+    [Networked] public NetworkObject CarrierBox { get; set; }
+    [Networked] public Vector3 CarriedLocalPos { get; set; }
+    [Networked] public Quaternion CarriedLocalRot { get; set; }
 
-    public void PackIntoBox(NetworkObject box, Vector3 worldPosition, Quaternion worldRotation)
+    private Rigidbody rb;
+
+    private void Awake()
     {
-        RPC_PackIntoBox(box, worldPosition, worldRotation);
+        rb = GetComponent<Rigidbody>();
     }
 
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    private void RPC_PackIntoBox(NetworkObject box, Vector3 worldPosition, Quaternion worldRotation)
+    public void StartCarry(NetworkObject box)
     {
-        PackedParent = box;
-        PackedLocalPos = box.transform.InverseTransformPoint(worldPosition);
-        PackedLocalRot = Quaternion.Inverse(box.transform.rotation) * worldRotation;
-        IsPacked = true;
-    }
-
-    /*
-        public void PackIntoBox(Transform contentParent, Vector3 worldPosition, Quaternion worldRotation)
+        if (!HasStateAuthority || box == null || rb == null)
         {
-            IsPacked = true;
-
-            if (TryGetComponent(out NetworkTransform netTransform))
-            {
-                netTransform.enabled = false;
-            }
-
-            if (TryGetComponent(out Rigidbody rb))
-            {
-                rb.isKinematic = true;
-                rb.useGravity = false;
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-            }
-
-            transform.SetParent(contentParent);
-            transform.position = worldPosition;
-            transform.rotation = worldRotation;
+            return;
         }
-        */
-    private void DisablePhysics()
-    {
-        physicsDisabled = true;
-
-        if (TryGetComponent(out Rigidbody rb))
+            
+        if (CarrierBox == box)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            return;
+        }
+
+        if (CarrierBox != null)
+        {
+            return;
+        }
+
+        CarriedLocalPos = box.transform.InverseTransformPoint(transform.position);
+
+        CarriedLocalRot = Quaternion.Inverse(box.transform.rotation) * transform.rotation;
+
+        CarrierBox = box;
+
+        rb.isKinematic = true;
+        rb.useGravity = false;
+
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
+
+    public void StopCarry()
+    {
+        if (!HasStateAuthority || rb == null)
+        {
+            return;
+        }
+
+        CarrierBox = null;
+
+        GrabbableObject grabbable = GetComponent<GrabbableObject>();
+
+        if (grabbable != null && grabbable.IsGrabbed)
+        {
+            return;
+        }
+        rb.isKinematic = false;
+        rb.useGravity = true;
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        if (!HasStateAuthority || rb == null)
+        {
+            return;
+        }
+
+        GrabbableObject grabbable = GetComponent<GrabbableObject>();
+
+        bool held = grabbable != null && grabbable.IsGrabbed;
+
+        if (CarrierBox != null)
+        {
             rb.isKinematic = true;
             rb.useGravity = false;
         }
-
-        foreach (Collider c in GetComponentsInChildren<Collider>())
+        else if (!held)
         {
-            c.enabled = false;
+            rb.isKinematic = false;
+            rb.useGravity = true;
         }
     }
 
     public override void Render()
     {
-        if (!IsPacked || PackedParent == null)
+        if (CarrierBox == null)
         {
             return;
-        } 
-
-        if (!physicsDisabled)
-        {
-            DisablePhysics();
-        } 
-        transform.position = PackedParent.transform.TransformPoint(PackedLocalPos);
-        transform.rotation = PackedParent.transform.rotation * PackedLocalRot;
+        }
+        transform.SetPositionAndRotation(CarrierBox.transform.TransformPoint(CarriedLocalPos), CarrierBox.transform.rotation * CarriedLocalRot);
     }
 }

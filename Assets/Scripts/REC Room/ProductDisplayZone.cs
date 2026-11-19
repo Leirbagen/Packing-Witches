@@ -13,7 +13,7 @@ public class ProductDisplayZone : NetworkBehaviour
 
         foreach (var hit in hits)
         {
-            if (hit.TryGetComponent(out PackableItem item) && !item.IsPacked)
+            if (hit.TryGetComponent(out PackableItem item)/* && !item.IsPacked*/)
             {
                 if (item.TryGetComponent(out GrabbableObject grabbable) && !grabbable.IsGrabbed)
                 {

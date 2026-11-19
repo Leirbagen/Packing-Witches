@@ -8,12 +8,9 @@ public class PlayerInteractor : NetworkBehaviour
     public float interactionDistance = 3f;
     public LayerMask interactableLayer;
     private IInteractable currentInteractable;
-    public BoxContainer AimedBox { get; private set; }
-    public Vector3 AimedPoint { get; private set; }
 
     private void Update()
     {
-        AimedBox = null;
         if (!HasStateAuthority && !HasInputAuthority)
         {
             return;
@@ -72,11 +69,7 @@ public class PlayerInteractor : NetworkBehaviour
         {
             currentInteractable = validHit.collider.GetComponentInParent<IInteractable>();
             GrabbableObject grabbable = validHit.collider.GetComponentInParent<GrabbableObject>();
-            if (currentInteractable is BoxContainer box)
-            {
-                AimedBox = box;
-                AimedPoint = validHit.point;
-            }
+
             if (currentInteractable != null)
             {
                 string prompt = currentInteractable.GetInteractionPrompt();

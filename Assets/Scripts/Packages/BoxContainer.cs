@@ -1,3 +1,5 @@
+
+using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
@@ -5,35 +7,33 @@ public class BoxContainer : NetworkBehaviour, IInteractable
 {
     [Header("Box Configuration")]
     public string boxName = "Small Box";
-    [Networked, Capacity(20)] public NetworkLinkedList<int> PackedItemIDs => default;
+
+    [Networked, Capacity(20)]
+    public NetworkLinkedList<int> PackedItemIDs => default;
+
     [Networked] public NetworkBool HasStamp { get; set; }
     [Networked] public int StampDestinationId { get; set; } = -1;
+    [Networked] public NetworkBool ContentsLocked { get; set; }
 
-    [Header("References")]
-    public BoxGrid grid;
-    public Transform contentParent;
+    [Header("Content Detection")]
+    public BoxCollider contentZone;
+    public LayerMask itemLayer;
+    public int checkEveryTicks = 10;
     public Transform stampAnchor;
-    
+    private List<PackableItem> carried = new List<PackableItem>();
+    private bool wasBoxHeld;
+
     public string GetInteractionPrompt()
     {
         PlayerGrab localGrab = FindLocalPlayerGrab();
+
         if (localGrab != null && localGrab.IsHolding && localGrab.HeldObject != null)
         {
-            GrabbableObject held = localGrab.HeldObject;
-            if (held.TryGetComponent(out Stamp stamp))
+            if (localGrab.HeldObject.TryGetComponent(out Stamp stamp))
             {
                 if (!HasStamp && !stamp.IsAttached && stamp.destination != null)
                 {
                     return $"Press [PACK] to put label ({stamp.destination.destiny}) on {boxName}";
-                }
-                return string.Empty;
-            }
-
-            if (held.TryGetComponent(out PackableItem item))
-            {
-                if (!item.IsPacked && item.productData != null)
-                {
-                    return $"Press [F] to place {item.productData.productName} (R to rotate)";
                 }
             }
         }
@@ -60,26 +60,6 @@ public class BoxContainer : NetworkBehaviour, IInteractable
         }
     }
 
-    public void RequestPack(int x, int y, int rotation, Vector2Int size)
-    {
-        RPC_PackAt(Runner.LocalPlayer, x, y, rotation, size.x, size.y);
-    }
-
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    private void RPC_PackAt(PlayerRef interactor, int x, int y, int rotation, int sizeX, int sizeY)
-    {
-        PlayerGrab playerGrab = FindPlayerGrab(interactor);
-        if (playerGrab == null || !playerGrab.IsHolding || playerGrab.HeldObject == null)
-        {
-            return;
-        }
-
-        if (playerGrab.HeldObject.TryGetComponent(out PackableItem item))
-        {
-            TryPackItem(playerGrab, item, x, y, rotation, new Vector2Int(sizeX, sizeY));
-        }
-    }
-
     private void TryAttachStamp(PlayerGrab playerGrab, Stamp stamp)
     {
         if (HasStamp || stamp.IsAttached || stamp.destination == null)
@@ -87,56 +67,173 @@ public class BoxContainer : NetworkBehaviour, IInteractable
             return;
         }
         playerGrab.RequestDrop();
+
         HasStamp = true;
         StampDestinationId = stamp.destination.id;
-        Transform anchor;
-        if(stampAnchor != null)
-        {
-            anchor = stampAnchor;
-        }
-        else
-        {
-            anchor = transform;
-        }
+
+        Transform anchor = stampAnchor != null
+            ? stampAnchor
+            : transform;
+
         stamp.AttachToBox(anchor, Object);
     }
 
-    private void TryPackItem(PlayerGrab playerGrab, PackableItem item, int x, int y, int rotation, Vector2Int size)
+    public override void FixedUpdateNetwork()
     {
-        if (item.IsPacked || item.productData == null)
+        if (!HasStateAuthority || ContentsLocked)
         {
             return;
         }
-        Vector2Int fp = item.productData.footprint;
-
-        bool normal = false;
-        if (size.x == fp.x && size.y == fp.y)
+            
+        GrabbableObject boxGrab = GetComponent<GrabbableObject>();
+        bool boxHeld = boxGrab != null && boxGrab.IsGrabbed;
+        if (boxHeld)
         {
-            normal = true;
+            if (!wasBoxHeld)
+            {
+                RefreshContents();
+                wasBoxHeld = true;
+            }
+            return;
+        }
+        if (wasBoxHeld)
+        {
+            foreach (PackableItem item in carried)
+            {
+                if (item != null)
+                {
+                    item.StopCarry();
+                }
+            }
+            wasBoxHeld = false;
         }
 
-        bool swapped = false;
-        if (size.x == fp.y && size.y == fp.x)
-        {
-            swapped = true;
-        }
-
-        if (!normal && !swapped)
+        if (contentZone == null)
         {
             return;
         }
-
-        if (grid.Place(size, x, y) == -1)
+        if (Runner.Tick % Mathf.Max(1, checkEveryTicks) != 0)
         {
             return;
         }
+        RefreshContents();
+    }
 
-        playerGrab.RequestDrop();
-        PackedItemIDs.Add(item.productData.id);
+    public void RefreshContents()
+    {
+        if (!HasStateAuthority || contentZone == null || ContentsLocked)
+        {
+            return;
+        }
+        Vector3 center = contentZone.transform.TransformPoint(contentZone.center);
+        Vector3 halfExtents = Vector3.Scale(contentZone.size, contentZone.transform.lossyScale) * 0.5f;
+        Collider[] hits = Physics.OverlapBox(center, halfExtents, contentZone.transform.rotation, itemLayer, QueryTriggerInteraction.Collide);
+        HashSet<PackableItem> found = new HashSet<PackableItem>();
+        List<int> ids = new List<int>();
 
-        Vector3 pos = grid.FootprintCenterWorld(size, x, y);
-        Quaternion rot = grid.gridOrigin.rotation * Quaternion.Euler(0f, 90f * rotation, 0f);
-        item.PackIntoBox(Object, pos, rot);
+        foreach (Collider hit in hits)
+        {
+            PackableItem item = hit.GetComponentInParent<PackableItem>();
+
+            if (item == null || item.productData == null)
+            {
+                continue;
+            }
+            if (found.Contains(item))
+            {
+                continue;
+            }
+            GrabbableObject grabbable = item.GetComponent<GrabbableObject>();
+            if (grabbable != null && grabbable.IsGrabbed)
+            {
+                continue;
+            }
+            found.Add(item);
+            ids.Add(item.productData.id);
+        }
+
+        ids.Sort();
+
+        foreach (PackableItem old in carried)
+        {
+            if (old != null && !found.Contains(old))
+            {
+                if (old.CarrierBox == Object)
+                {
+                    old.StopCarry();
+                }
+            }
+        }
+        carried.Clear();
+
+        GrabbableObject boxGrab = GetComponent<GrabbableObject>();
+        bool boxHeld = boxGrab != null && boxGrab.IsGrabbed;
+
+        foreach (PackableItem item in found)
+        {
+            carried.Add(item);
+
+            if (boxHeld && item.CarrierBox != Object)
+            {
+                if (item.CarrierBox == null)
+                {
+                    item.StartCarry(Object);
+                }
+            }
+            else if (!boxHeld && item.CarrierBox == Object)
+            {
+                item.StopCarry();
+            }
+        }
+
+        if (SameContents(ids))
+        {
+            return;
+        }
+        PackedItemIDs.Clear();
+
+        foreach (int id in ids)
+        {
+            if (PackedItemIDs.Count >= PackedItemIDs.Capacity)
+            {
+                break;
+            }
+            PackedItemIDs.Add(id);
+        }
+    }
+
+    public void PrepareForDelivery()
+    {
+        if (!HasStateAuthority || ContentsLocked)
+        {
+            return;
+        }
+        RefreshContents();
+        foreach (PackableItem item in carried)
+        {
+            if (item != null)
+            {
+                item.StartCarry(Object);
+            }
+        }
+        ContentsLocked = true;
+    }
+
+    private bool SameContents(List<int> ids)
+    {
+        if (ids.Count != PackedItemIDs.Count)
+        {
+            return false;
+        }
+        for (int i = 0; i < ids.Count; i++)
+        {
+            if (PackedItemIDs[i] != ids[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private PlayerGrab FindPlayerGrab(PlayerRef playerRef)
@@ -154,6 +251,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
                 return grabber;
             }
         }
+
         return null;
     }
 
@@ -166,6 +264,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
                 return grabber;
             }
         }
+
         return null;
     }
 }
