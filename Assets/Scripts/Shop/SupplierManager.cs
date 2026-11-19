@@ -16,6 +16,8 @@ public class SupplierManager : NetworkBehaviour
     public Transform storageSpawnPoint;
     public float expressDeliveryDelay = 3f;
 
+    public WorldPromptUI worldPrompt;
+
     [Networked, Capacity(50)]
     public NetworkLinkedList<int> PendingOrders => default;
 
@@ -60,16 +62,22 @@ public class SupplierManager : NetworkBehaviour
     private void RPC_BroadcastOrder(int index, NetworkBool isExpress, NetworkBool success)
     {
         SupplierEntry entry = supplierCatalog[index];
-        int finalPrice = isExpress ? (int)entry.productData.price * 2 : (int)entry.productData.price;
-        string type = isExpress ? "EXPRESS" : "NORMAL";
+        int finalPrice = (int)entry.productData.price;
+        string type = "NORMAL";
+
+        if (isExpress)
+        {
+            finalPrice = (int)entry.productData.price * 2;
+            type = "EXPRESS";
+        }
 
         if (success)
         {
-            Debug.Log($"<color=yellow>[Supplier] {type} Order placed: {entry.productData.productName} for ${finalPrice}.</color>");
+            worldPrompt.ShowTemporaryMessage($"<color=#FFFF00>{type} Order: {entry.productData.productName} (${finalPrice})</color>");
         }
         else
         {
-            Debug.LogWarning($"[Supplier] Not enough money to order {entry.productData.productName}. Need ${finalPrice}.");
+            worldPrompt.ShowTemporaryMessage($"<color=#FF4444>Not enough money! Need ${finalPrice}</color>");
         }
     }
 
@@ -131,11 +139,11 @@ public class SupplierManager : NetworkBehaviour
     {
         if (isExpress)
         {
-            Debug.Log($"<color=orange>[Supplier] EXPRESS delivery arrived: {deliveryName}!</color>");
+            worldPrompt.ShowTemporaryMessage($"<color=#FFA500>EXPRESS arrived: {deliveryName}!</color>", 3.5f);
         }
         else
         {
-            Debug.Log($"<color=green>[Supplier] Good morning! {deliveryName} delivered to storage.</color>");
+            worldPrompt.ShowTemporaryMessage($"<color=#44FF44>Good morning! {deliveryName} in storage.</color>", 4f);
         }
     }
 }

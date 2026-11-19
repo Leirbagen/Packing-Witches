@@ -21,7 +21,6 @@ public class CatBowl : NetworkBehaviour, IInteractable
         if (cat != null)
         {
             cat.FeedCat();
-            Debug.Log("<color=green>[CatBowl] El plato ha sido llenado.</color>");
         }
     }
 }

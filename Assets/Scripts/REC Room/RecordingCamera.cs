@@ -16,7 +16,7 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
     public GameObject playerHUD;
     public GameObject recCanvas;
     public TextMeshProUGUI timerText;
-
+    public WorldPromptUI worldPrompt;
     [Networked] public NetworkBool IsRecording { get; set; }
     [Networked] public TickTimer RecordingTimer { get; set; }
     [Networked] public PlayerRef CurrentCameraman { get; set; }
@@ -100,11 +100,11 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
     {
         if (isStarting)
         {
-            Debug.Log("<color=magenta>[Recording] Camera is rolling </color>");
+            worldPrompt.ShowTemporaryMessage("<color=#FF00FF>Camera is rolling!</color>");
         }
         else
         {
-            Debug.Log("<color=magenta>[Recording] Video uploaded </color>");
+            worldPrompt.ShowTemporaryMessage("<color=#44FF44>Video uploaded! +$10</color>");
         }
 
         if (interactor == Runner.LocalPlayer)
@@ -117,6 +117,7 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
 
                 playerHUD.SetActive(false);
                 recCanvas.SetActive(true);
+                worldPrompt.gameObject.SetActive(false);
             }
             else
             {
@@ -125,6 +126,7 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
 
                 playerHUD.SetActive(true);
                 recCanvas.SetActive(false);
+                worldPrompt.gameObject.SetActive(true);
             }
         }
     }
