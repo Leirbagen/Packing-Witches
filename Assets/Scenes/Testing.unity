@@ -2753,7 +2753,7 @@ MonoBehaviour:
   placementPoint: {fileID: 1020644029}
   boxSpacing: {x: 1, y: 0, z: 1}
   boxesPerRow: 3
-  worldPrompt: {fileID: 0}
+  worldPrompt: {fileID: 3456160247945528380, guid: cf7da0752a46ddc468d71c125df9cd04, type: 3}
   _DeliveredCount: 0
 --- !u!4 &215406791
 Transform:
