@@ -12,6 +12,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
     [Networked] public NetworkBool HasStamp { get; set; }
     [Networked] public int StampDestinationId { get; set; } = -1;
     [Networked] public NetworkBool ContentsLocked { get; set; }
+    [Networked] public NetworkString<_64> StampContent { get; set; }
 
     [Header("Content Detection")]
     public BoxCollider contentZone;
@@ -29,9 +30,9 @@ public class BoxContainer : NetworkBehaviour, IInteractable
         {
             if (localGrab.HeldObject.TryGetComponent(out Stamp stamp))
             {
-                if (!HasStamp && !stamp.IsAttached && stamp.destination != null)
+                if (!HasStamp && !stamp.IsAttached)
                 {
-                    return $"Press [F] to put label ({stamp.destination.destiny}) on {boxName}";
+                    return $"Press [F] to put label ({stamp.Content}) on {boxName}";
                 }
             }
         }
@@ -59,13 +60,13 @@ public class BoxContainer : NetworkBehaviour, IInteractable
 
     private void TryAttachStamp(PlayerGrab playerGrab, Stamp stamp)
     {
-        if (HasStamp || stamp.IsAttached || stamp.destination == null)
+        if (HasStamp || stamp.IsAttached)
         {
             return;
         }
         playerGrab.RequestDrop();
         HasStamp = true;
-        StampDestinationId = stamp.destination.id;
+        StampContent = stamp.Content;
         Transform anchor;
         if (stampAnchor != null)
         {

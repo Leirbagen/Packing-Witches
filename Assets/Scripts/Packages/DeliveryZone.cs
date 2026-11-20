@@ -114,10 +114,11 @@ public class DeliveryZone : NetworkBehaviour
         OrderData order = null;
         int orderId = -1;
 
+        string stampContent = box.StampContent.ToString().Trim();
         for (int i = 0; i < orders.Count; i++)
         {
             OrderData candidate = OrderManager.Instance.GetOrder(orders[i]);
-            if (candidate != null && candidate.destination != null && candidate.destination.id == box.StampDestinationId)
+            if (candidate != null && candidate.destination != null && string.Equals(candidate.destination.destiny.Trim(), stampContent, System.StringComparison.OrdinalIgnoreCase))
             {
                 order = candidate;
                 orderId = orders[i];
