@@ -14,7 +14,7 @@ public class Stamp : NetworkBehaviour
         IsAttached = true;
         ParentBox = boxObject;
 
-        ApplyPartnerLogic(anchor);
+        StickToAnchor(anchor);
     }
 
     private void OnParentBoxChanged()
@@ -26,11 +26,11 @@ public class Stamp : NetworkBehaviour
             {
                 anchor = box.stampAnchor;
             }
-            ApplyPartnerLogic(anchor);
+            StickToAnchor(anchor);
         }
     }
 
-    private void ApplyPartnerLogic(Transform anchor)
+    private void StickToAnchor(Transform anchor)
     {
         if (TryGetComponent(out NetworkTransform netTransform))
         {
@@ -38,10 +38,22 @@ public class Stamp : NetworkBehaviour
         }
         if (TryGetComponent(out Rigidbody rb))
         {
+            if (!rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
             rb.isKinematic = true;
             rb.useGravity = false;
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            rb.detectCollisions = false;
+        }
+        foreach (Collider c in GetComponentsInChildren<Collider>())
+        {
+            c.enabled = false;
+        }
+        if (TryGetComponent(out GrabbableObject grabbable))
+        {
+            grabbable.enabled = false;
         }
 
         transform.SetParent(anchor);

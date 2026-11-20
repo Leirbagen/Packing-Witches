@@ -31,7 +31,7 @@ public class BoxContainer : NetworkBehaviour, IInteractable
             {
                 if (!HasStamp && !stamp.IsAttached && stamp.destination != null)
                 {
-                    return $"Press [PACK] to put label ({stamp.destination.destiny}) on {boxName}";
+                    return $"Press [F] to put label ({stamp.destination.destiny}) on {boxName}";
                 }
             }
         }

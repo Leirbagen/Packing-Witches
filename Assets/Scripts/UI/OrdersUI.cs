@@ -40,7 +40,8 @@ public class OrdersUI : MonoBehaviour
         {
             text += "- " + " x" + line.quantity + line.product.name + "\n";
         }
-        text += "Pago: $" + order.payment;
+        text += "Pago: $" + order.payment + "\n";
+        text += "Destino: " + order.destination.destiny;
         return text;
     }
 }
