@@ -1,6 +1,7 @@
 using Fusion;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class SupplierManager : NetworkBehaviour
 {
@@ -16,6 +17,12 @@ public class SupplierManager : NetworkBehaviour
     public Transform storageSpawnPoint;
     public float expressDeliveryDelay = 3f;
 
+    [Header("Delivery Box Settings")]
+    public NetworkPrefabRef deliveryBoxPrefab;
+    public int maxItemsPerBox = 4;
+    public Vector3 boxSpacing = new Vector3(0.8f, 0f, 0.8f);
+    public float itemVerticalSpacing = 0.12f;
+
     public WorldPromptUI worldPrompt;
 
     [Networked, Capacity(50)]
@@ -23,6 +30,10 @@ public class SupplierManager : NetworkBehaviour
 
     [Networked]
     private DayPhase previousPhase { get; set; }
+
+    private List<SupplierEntry> expressQueue = new List<SupplierEntry>();
+    private Coroutine expressCoroutine;
+    private int totalSpawnedBoxes = 0;
 
     public void OrderSupply(int index, bool isExpress)
     {
@@ -32,12 +43,22 @@ public class SupplierManager : NetworkBehaviour
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     private void RPC_RequestOrderSupply(int index, NetworkBool isExpress)
     {
-        if (index < 0 || index >= supplierCatalog.Length) return;
+        if (index < 0 || index >= supplierCatalog.Length)
+        {
+            return;
+        }
 
         SupplierEntry entry = supplierCatalog[index];
-        if (entry.productData == null) return;
+        if (entry.productData == null)
+        {
+            return;
+        }
 
-        int finalPrice = isExpress ? (int)entry.productData.price * 2 : (int)entry.productData.price;
+        int finalPrice = (int)entry.productData.price;
+        if (isExpress)
+        {
+            finalPrice = (int)entry.productData.price * 2;
+        }
 
         if (EconomyManager.Instance.TrySpend(finalPrice))
         {
@@ -45,7 +66,12 @@ public class SupplierManager : NetworkBehaviour
 
             if (isExpress)
             {
-                StartCoroutine(ExpressDeliveryRoutine(entry));
+                expressQueue.Add(entry);
+                if (expressCoroutine != null)
+                {
+                    StopCoroutine(expressCoroutine);
+                }
+                expressCoroutine = StartCoroutine(ExpressDeliveryRoutine());
             }
             else
             {
@@ -81,16 +107,32 @@ public class SupplierManager : NetworkBehaviour
         }
     }
 
-    private IEnumerator ExpressDeliveryRoutine(SupplierEntry entry)
+    private IEnumerator ExpressDeliveryRoutine()
     {
         yield return new WaitForSeconds(expressDeliveryDelay);
 
-        if (Object != null && Object.HasStateAuthority)
+        if (Object != null && Object.HasStateAuthority && expressQueue.Count > 0)
         {
-            Vector3 randomOffset = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(0f, 1f), Random.Range(-0.5f, 0.5f));
-            Runner.Spawn(entry.prefab, storageSpawnPoint.position + randomOffset, storageSpawnPoint.rotation);
+            List<SupplierEntry> batch = new List<SupplierEntry>();
 
-            RPC_BroadcastDelivery(entry.productData.productName, true);
+            foreach (SupplierEntry entry in expressQueue)
+            {
+                batch.Add(entry);
+                if (batch.Count >= maxItemsPerBox)
+                {
+                    SpawnBoxWithItems(batch);
+                    batch.Clear();
+                }
+            }
+
+            if (batch.Count > 0)
+            {
+                SpawnBoxWithItems(batch);
+            }
+
+            RPC_BroadcastDelivery($"{expressQueue.Count} items", true);
+            expressQueue.Clear();
+            expressCoroutine = null;
         }
     }
 
@@ -104,7 +146,10 @@ public class SupplierManager : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority || DayManager.Instance == null) return;
+        if (!HasStateAuthority || DayManager.Instance == null)
+        {
+            return;
+        }
 
         DayPhase currentPhase = DayManager.Instance.CurrentPhase;
 
@@ -118,20 +163,106 @@ public class SupplierManager : NetworkBehaviour
 
     private void DeliverPendingOrders()
     {
-        if (PendingOrders.Count == 0) return;
+        if (PendingOrders.Count == 0)
+        {
+            return;
+        }
 
         RPC_BroadcastDelivery($"{PendingOrders.Count} items", false);
+
+        List<SupplierEntry> currentBatch = new List<SupplierEntry>();
 
         foreach (int index in PendingOrders)
         {
             if (index >= 0 && index < supplierCatalog.Length)
             {
-                SupplierEntry entry = supplierCatalog[index];
-                Vector3 randomOffset = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(0f, 1f), Random.Range(-0.5f, 0.5f));
-                Runner.Spawn(entry.prefab, storageSpawnPoint.position + randomOffset, storageSpawnPoint.rotation);
+                currentBatch.Add(supplierCatalog[index]);
+
+                if (currentBatch.Count >= maxItemsPerBox)
+                {
+                    SpawnBoxWithItems(currentBatch);
+                    currentBatch.Clear();
+                }
             }
         }
+
+        if (currentBatch.Count > 0)
+        {
+            SpawnBoxWithItems(currentBatch);
+        }
+
         PendingOrders.Clear();
+    }
+
+    private void SpawnBoxWithItems(List<SupplierEntry> items)
+    {
+        if (!deliveryBoxPrefab.IsValid)
+        {
+            return;
+        }
+
+        int slot = totalSpawnedBoxes % 9;
+        totalSpawnedBoxes++;
+
+        int col = slot % 3;
+        int row = slot / 3;
+        Vector3 localOffset = new Vector3(col * boxSpacing.x, 0f, row * boxSpacing.z);
+        Vector3 boxPosition = storageSpawnPoint.position + storageSpawnPoint.TransformDirection(localOffset);
+
+        NetworkObject boxObj = Runner.Spawn(deliveryBoxPrefab, boxPosition, storageSpawnPoint.rotation);
+        if (boxObj.TryGetComponent(out Rigidbody boxRb))
+        {
+            boxRb.linearVelocity = Vector3.zero;
+            boxRb.angularVelocity = Vector3.zero;
+        }
+
+        BoxContainer box = boxObj.GetComponent<BoxContainer>();
+        if (box == null)
+        {
+            box = boxObj.GetComponentInChildren<BoxContainer>();
+        }
+
+        Vector3 spawnCenter = boxPosition + new Vector3(0f, 0.15f, 0f);
+        Vector3 zoneHalfSize = new Vector3(0.15f, 0.1f, 0.15f);
+
+        if (box != null && box.contentZone != null)
+        {
+            zoneHalfSize = Vector3.Scale(box.contentZone.size, box.contentZone.transform.lossyScale) * 0.25f;
+        }
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            int gridX = i % 2;
+            int gridZ = (i / 2) % 2;
+            int layerY = i / 4;
+
+            float offsetX = -zoneHalfSize.x;
+            if (gridX == 1)
+            {
+                offsetX = zoneHalfSize.x;
+            }
+
+            float offsetZ = -zoneHalfSize.z;
+            if (gridZ == 1)
+            {
+                offsetZ = zoneHalfSize.z;
+            }
+
+            Vector3 localItemPos = new Vector3(offsetX, layerY * itemVerticalSpacing, offsetZ);
+            Vector3 worldItemPos = spawnCenter + storageSpawnPoint.TransformDirection(localItemPos);
+
+            NetworkObject itemObj = Runner.Spawn(items[i].prefab, worldItemPos, storageSpawnPoint.rotation);
+            if (itemObj.TryGetComponent(out Rigidbody itemRb))
+            {
+                itemRb.linearVelocity = Vector3.zero;
+                itemRb.angularVelocity = Vector3.zero;
+            }
+        }
+
+        if (box != null)
+        {
+            box.RefreshContents();
+        }
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
