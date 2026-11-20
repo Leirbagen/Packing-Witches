@@ -9798,6 +9798,11 @@ MonoBehaviour:
       RawGuidValue: 97bddebf7f5dccf409a293d90efe9f87
   storageSpawnPoint: {fileID: 1326807995}
   expressDeliveryDelay: 3
+  deliveryBoxPrefab:
+    RawGuidValue: 17cbf5366531ce44db497160c6708259
+  maxItemsPerBox: 5
+  boxSpacing: {x: 0.8, y: 0, z: 0.8}
+  itemVerticalSpacing: 0.12
   worldPrompt: {fileID: 851310594}
   _PendingOrders: 
 --- !u!1 &956269647
@@ -12922,7 +12927,7 @@ Transform:
   m_GameObject: {fileID: 1326807994}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.172, y: 0.988, z: 8.11}
+  m_LocalPosition: {x: -5.172, y: 1.092, z: 8.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

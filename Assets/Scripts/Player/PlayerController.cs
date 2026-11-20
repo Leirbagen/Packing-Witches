@@ -4,8 +4,8 @@ using Fusion;
 public class PlayerController : NetworkBehaviour
 {
     private NetworkCharacterController characterController;
-    [SerializeField] private float velocity = 5;
-    [SerializeField] private float runVelocity = 40; 
+    [SerializeField] private float velocity = 5f;
+    [SerializeField] private float runVelocity = 9f;
     [SerializeField] private float maxStamina = 100f;
     [SerializeField] private float staminaDrainPerSecond = 20f;
     [SerializeField] private float staminaRegenPerSecond = 15f;
@@ -23,10 +23,14 @@ public class PlayerController : NetworkBehaviour
     public GameObject cameraLook;
     [Networked] public float NetworkYaw { get; set; }
     private float pendingJumpForce = 0f;
+
     private void Awake()
     {
         characterController = GetComponent<NetworkCharacterController>();
+        characterController.acceleration = 100f;
+        characterController.braking = 100f;
     }
+
     public override void Spawned()
     {
         base.Spawned();
@@ -39,11 +43,11 @@ public class PlayerController : NetworkBehaviour
             if (camComponent != null)
             {
                 camComponent.enabled = true;
-            } 
+            }
             if (audioListener != null)
             {
                 audioListener.enabled = true;
-            } 
+            }
             cameraLook.tag = "MainCamera";
         }
         else
@@ -51,15 +55,16 @@ public class PlayerController : NetworkBehaviour
             if (camComponent != null)
             {
                 camComponent.enabled = false;
-            } 
+            }
             if (audioListener != null)
             {
                 audioListener.enabled = false;
-            } 
+            }
         }
+
         if (Object.HasStateAuthority)
         {
-            wasGrounded = true; // could be useful
+            wasGrounded = true;
             Stamina = maxStamina;
         }
     }
@@ -71,7 +76,7 @@ public class PlayerController : NetworkBehaviour
         {
             return;
         }
-        
+
         Vector3 moveDirection = Vector3.zero;
         bool jumpPressed = false;
         bool runPressed = false;
@@ -87,8 +92,8 @@ public class PlayerController : NetworkBehaviour
             moveDirection.Normalize();
             jumpPressed = data.buttons.IsSet(InputButton.jump);
             runPressed = data.buttons.IsSet(InputButton.run);
-
         }
+
         if (pendingJumpForce > 0f)
         {
             if (characterController.Grounded)
@@ -98,9 +103,7 @@ public class PlayerController : NetworkBehaviour
             characterController.Velocity = new Vector3(characterController.Velocity.x, pendingJumpForce, characterController.Velocity.z);
             pendingJumpForce = 0f;
         }
-        
-        bool isInAir = !characterController.Grounded;
-        
+
         bool wantsToRun = false;
         if (runPressed == true)
         {
@@ -109,6 +112,7 @@ public class PlayerController : NetworkBehaviour
                 wantsToRun = true;
             }
         }
+
         isRunning = false;
         if (wantsToRun == true)
         {
@@ -120,7 +124,8 @@ public class PlayerController : NetworkBehaviour
                 }
             }
         }
-        if(isRunning == true)
+
+        if (isRunning == true)
         {
             characterController.maxSpeed = runVelocity;
         }
@@ -128,9 +133,19 @@ public class PlayerController : NetworkBehaviour
         {
             characterController.maxSpeed = velocity;
         }
+
+        if (moveDirection.sqrMagnitude < 0.01f)
+        {
+            characterController.Velocity = new Vector3(0f, characterController.Velocity.y, 0f);
+        }
+
         characterController.Move(moveDirection);
-        
-        
+
+        if (!jumpPressed && characterController.Velocity.y > characterController.jumpImpulse)
+        {
+            characterController.Velocity = new Vector3(characterController.Velocity.x, 0f, characterController.Velocity.z);
+        }
+
         UpdateStamina(isRunning);
         if (HasStateAuthority)
         {
@@ -147,9 +162,7 @@ public class PlayerController : NetworkBehaviour
                     playerAudio.PlayOneShot(jumpSound);
                 }
             }
-            
         }
-        
 
         transform.rotation = Quaternion.Euler(0f, NetworkYaw, 0f);
         wasGrounded = characterController.Grounded;
