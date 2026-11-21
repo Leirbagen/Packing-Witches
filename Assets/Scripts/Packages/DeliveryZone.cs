@@ -2,7 +2,7 @@
 using Fusion;
 using UnityEngine;
 
-public class DeliveryZone : NetworkBehaviour
+public class DeliveryZone : NetworkBehaviour, IInteractable
 {
     [Header("Delivery Zone")]
     public Vector3 zoneExtents = new Vector3(2f, 1f, 2f);
@@ -19,9 +19,42 @@ public class DeliveryZone : NetworkBehaviour
     [Networked]
     public int DeliveredCount { get; set; }
 
+    [Networked]
+    private TickTimer emptyWarningTimer { get; set; }
+
+    public string GetInteractionPrompt()
+    {
+        if (DayManager.Instance == null)
+        {
+            return "Delivery Zone";
+        }
+
+        if (DayManager.Instance.CurrentPhase == DayPhase.ActiveShift)
+        {
+            return "Delivery Zone\n<color=#44FF44>Drop stamped boxes here</color>";
+        }
+
+        if (DayManager.Instance.CurrentPhase == DayPhase.Morning)
+        {
+            return "Delivery Zone\n<color=#FFA500>Closed (Start the shift first)</color>";
+        }
+
+        return "Delivery Zone\n<color=#FF4444>Closed (Shift ended)</color>";
+    }
+
+    public void OnInteract(PlayerRef interactor)
+    {
+        // Delivery is handled automatically when dropping boxes inside the zone
+    }
+
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority)
+        {
+            return;
+        }
+
+        if (DayManager.Instance == null || DayManager.Instance.CurrentPhase != DayPhase.ActiveShift)
         {
             return;
         }
@@ -55,7 +88,6 @@ public class DeliveryZone : NetworkBehaviour
         {
             return;
         }
-        package.IsDelivered = true;
 
         BoxContainer box = package.GetComponent<BoxContainer>();
         if (box == null)
@@ -67,12 +99,27 @@ public class DeliveryZone : NetworkBehaviour
         {
             box.RefreshContents();
 
-            int payment = CheckBox(box, out int stars);
+            // Do not allow delivery if the box is completely empty
+            if (box.PackedItemIDs.Count == 0)
+            {
+                if (emptyWarningTimer.ExpiredOrNotRunning(Runner))
+                {
+                    emptyWarningTimer = TickTimer.CreateFromSeconds(Runner, 2.5f);
+                    RPC_ShowDeliveryMessage("<color=#FF4444>Box is empty! Add items before delivering</color>");
+                }
+                return;
+            }
+        }
+
+        package.IsDelivered = true;
+
+        if (box != null)
+        {
+            int payment = CheckBox(box, out int stars, out int discount);
 
             if (payment > 0 && EconomyManager.Instance != null)
             {
                 EconomyManager.Instance.AddRevenue(payment);
-                RPC_ShowDeliveryMessage("<color=green>Delivered! +$" + payment + " (" + stars + " stars)</color>");
             }
 
             if (ReputationManager.Instance != null)
@@ -80,21 +127,32 @@ public class DeliveryZone : NetworkBehaviour
                 ReputationManager.Instance.AddRating(stars);
             }
 
-            box.PrepareForDelivery();
+            if (payment > 0)
+            {
+                if (discount > 0)
+                {
+                    RPC_ShowDeliveryMessage($"<color=#FFA500>Incomplete! +${payment} (-${discount})</color>");
+                }
+                else
+                {
+                    RPC_ShowDeliveryMessage($"<color=#44FF44>Perfect Delivery! +${payment} ({stars} stars)</color>");
+                }
+            }
 
-            Debug.Log("[Delivery] Pago: " + payment);
+            box.PrepareForDelivery();
         }
 
         PlaceBox(package);
     }
 
-    private int CheckBox(BoxContainer box, out int stars)
+    private int CheckBox(BoxContainer box, out int stars, out int discount)
     {
         stars = 1;
+        discount = 0;
 
         if (!box.HasStamp)
         {
-            RPC_ShowDeliveryMessage("<color=red>Missing stamp!</color>");
+            RPC_ShowDeliveryMessage("<color=#FF4444>Missing stamp! ($0)</color>");
             return 0;
         }
 
@@ -107,7 +165,7 @@ public class DeliveryZone : NetworkBehaviour
 
         if (orders.Count == 0)
         {
-            RPC_ShowDeliveryMessage("<color=red>No pending orders</color>");
+            RPC_ShowDeliveryMessage("<color=#FF4444>No pending orders</color>");
             return 0;
         }
 
@@ -128,7 +186,7 @@ public class DeliveryZone : NetworkBehaviour
 
         if (order == null)
         {
-            RPC_ShowDeliveryMessage("<color=red>No order for this destination</color>");
+            RPC_ShowDeliveryMessage("<color=#FF4444>No order for this destination ($0)</color>");
             return 0;
         }
 
@@ -138,44 +196,63 @@ public class DeliveryZone : NetworkBehaviour
             boxItems.Add(id);
         }
 
-        int missing = 0;
+        int totalRequired = 0;
+        int matched = 0;
+
         foreach (ProductQuantity line in order.products)
         {
+            totalRequired += line.quantity;
+
             for (int i = 0; i < line.quantity; i++)
             {
                 if (boxItems.Contains(line.product.id))
                 {
                     boxItems.Remove(line.product.id);
-                }
-                else
-                {
-                    missing++;
+                    matched++;
                 }
             }
         }
 
         int extra = boxItems.Count;
-        int errors = Mathf.Max(missing, extra);
-
         orders.Remove(orderId);
 
         int fullPay = Mathf.RoundToInt((float)order.payment);
 
-        if (errors == 0)
+        if (totalRequired <= 0 || matched == 0)
+        {
+            stars = 1;
+            discount = fullPay;
+            RPC_ShowDeliveryMessage($"<color=#FF4444>Wrong items! -$ {fullPay} ($0 earned)</color>");
+            return 0;
+        }
+
+        // Calculate proportional payment based on delivered items
+        float completionRatio = (float)matched / totalRequired;
+        int earnedPay = Mathf.RoundToInt(fullPay * completionRatio);
+
+        // Apply a small penalty per wrong/extra item included
+        if (extra > 0)
+        {
+            int extraPenalty = Mathf.RoundToInt((fullPay / (float)totalRequired) * 0.25f * extra);
+            earnedPay = Mathf.Max(0, earnedPay - extraPenalty);
+        }
+
+        discount = fullPay - earnedPay;
+
+        if (matched == totalRequired && extra == 0)
         {
             stars = 5;
-            return fullPay;
         }
-
-        if (errors == 1)
+        else if (completionRatio >= 0.5f)
         {
             stars = 3;
-            return fullPay / 2;
+        }
+        else
+        {
+            stars = 2;
         }
 
-        stars = 1;
-        RPC_ShowDeliveryMessage("<color=red>Wrong items, no payment</color>");
-        return 0;
+        return earnedPay;
     }
 
     private void PlaceBox(DeliverablePackage package)
@@ -210,6 +287,11 @@ public class DeliveryZone : NetworkBehaviour
         if (worldPrompt != null)
         {
             worldPrompt.ShowTemporaryMessage(msg, 3f);
+        }
+
+        if (DeliveryFeedbackUI.Instance != null)
+        {
+            DeliveryFeedbackUI.Instance.ShowMessage(msg, 3.5f);
         }
     }
 

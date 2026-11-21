@@ -7,8 +7,9 @@ public class DeliverablePackage : NetworkBehaviour
 {
     public int rewardValue = 15;
 
-    [Networked]
+    [Networked, OnChangedRender(nameof(OnDeliveredChanged))]
     public NetworkBool IsDelivered { get; set; }
+
     public GrabbableObject Grabbable { get; private set; }
     private Rigidbody rb;
 
@@ -16,6 +17,18 @@ public class DeliverablePackage : NetworkBehaviour
     {
         Grabbable = GetComponent<GrabbableObject>();
         rb = GetComponent<Rigidbody>();
+    }
+
+    private void OnDeliveredChanged()
+    {
+        if (IsDelivered)
+        {
+            WorldPromptUI[] prompts = GetComponentsInChildren<WorldPromptUI>(true);
+            foreach (WorldPromptUI prompt in prompts)
+            {
+                prompt.gameObject.SetActive(false);
+            }
+        }
     }
 
     public override void FixedUpdateNetwork()
