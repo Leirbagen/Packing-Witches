@@ -6,7 +6,8 @@ public class PackableItem : NetworkBehaviour
 {
     [Header("Product Reference")]
     public ProductData productData;
-    [Networked] public NetworkObject CarrierBox { get; set; }
+    [Networked, OnChangedRender(nameof(OnCarrierBoxChanged))]
+    public NetworkObject CarrierBox { get; set; }
     [Networked] public Vector3 CarriedLocalPos { get; set; }
     [Networked] public Quaternion CarriedLocalRot { get; set; }
     [Networked] public NetworkObject TransportBox { get; set; }
@@ -52,6 +53,17 @@ public class PackableItem : NetworkBehaviour
                 rb.position = targetPosition;
                 rb.rotation = targetRotation;
             }
+        }
+    }
+
+    private void OnCarrierBoxChanged()
+    {
+        bool shouldShowPrompt = CarrierBox == null;
+
+        WorldPromptUI[] prompts = GetComponentsInChildren<WorldPromptUI>(true);
+        foreach (WorldPromptUI prompt in prompts)
+        {
+            prompt.gameObject.SetActive(shouldShowPrompt);
         }
     }
 
