@@ -12,15 +12,21 @@ public class DayManager : NetworkBehaviour
 {
     public static DayManager Instance { get; private set; }
 
-    [Header("Configuración del Día")]
+    [Header("Day Configuration")]
     public float shiftDurationInSeconds = 300f;
     [Networked] public DayPhase CurrentPhase { get; set; }
     [Networked] public TickTimer ShiftTimer { get; set; }
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void Update()
@@ -44,7 +50,10 @@ public class DayManager : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority)
+        {
+            return;
+        }
 
         if (CurrentPhase == DayPhase.ActiveShift)
         {
@@ -57,10 +66,12 @@ public class DayManager : NetworkBehaviour
 
     public void ChangePhase(DayPhase newPhase)
     {
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority)
+        {
+            return;
+        }
 
         CurrentPhase = newPhase;
-        Debug.Log($"<color=cyan>[DayManager] Changed day phase to: {CurrentPhase}</color>");
 
         if (CurrentPhase == DayPhase.ActiveShift)
         {

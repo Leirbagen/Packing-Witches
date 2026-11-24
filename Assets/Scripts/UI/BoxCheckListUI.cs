@@ -7,6 +7,7 @@ public class BoxChecklistUI : MonoBehaviour
 {
     [Header("Detection")]
     public float lookDistance = 3.5f;
+    public float detectionRadius = 0.08f;
     public string boxTag = "Box";
 
     [Header("UI References")]
@@ -15,54 +16,122 @@ public class BoxChecklistUI : MonoBehaviour
     public TextMeshProUGUI itemsText;
     public TextMeshProUGUI statusText;
 
+    [Header("Smooth Transition")]
+    public float fadeSpeed = 8f;
+    public float hideDelay = 0.25f;
+
+    private CanvasGroup canvasGroup;
+    private BoxContainer currentBox;
+    private float hideTimer = 0f;
+    private bool isVisible = false;
+
     private void Start()
     {
         if (panelContainer != null)
         {
+            canvasGroup = panelContainer.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {
+                canvasGroup = panelContainer.AddComponent<CanvasGroup>();
+            }
+
+            canvasGroup.alpha = 0f;
+            canvasGroup.blocksRaycasts = false;
+            canvasGroup.interactable = false;
             panelContainer.SetActive(false);
         }
     }
 
     private void Update()
     {
+        BoxContainer detectedBox = DetectLookedBox();
+
+        if (detectedBox != null)
+        {
+            currentBox = detectedBox;
+            hideTimer = hideDelay;
+            isVisible = true;
+            UpdateChecklistContent(currentBox);
+        }
+        else
+        {
+            if (hideTimer > 0f)
+            {
+                hideTimer -= Time.deltaTime;
+                if (currentBox != null)
+                {
+                    UpdateChecklistContent(currentBox);
+                }
+            }
+            else
+            {
+                isVisible = false;
+                currentBox = null;
+            }
+        }
+
+        UpdatePanelFade();
+    }
+
+    private BoxContainer DetectLookedBox()
+    {
         Camera cam = Camera.main;
         if (cam == null || OrderManager.Instance == null)
         {
-            HidePanel();
-            return;
+            return null;
         }
 
-        // Cast a ray from the center of the local player's camera
         Ray ray = new Ray(cam.transform.position, cam.transform.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, lookDistance))
+        if (Physics.SphereCast(ray, detectionRadius, out RaycastHit hit, lookDistance))
         {
             BoxContainer box = hit.collider.GetComponentInParent<BoxContainer>();
 
-            // Check if the parent box has the required tag and an attached stamp
             if (box != null && box.CompareTag(boxTag) && box.HasStamp)
             {
                 DeliverablePackage package = box.GetComponentInParent<DeliverablePackage>();
                 if (package != null && package.IsDelivered)
                 {
-                    HidePanel();
-                    return;
+                    return null;
                 }
 
-                ShowChecklistForBox(box);
-                return;
+                return box;
             }
         }
 
-        HidePanel();
+        return null;
     }
 
-    private void ShowChecklistForBox(BoxContainer box)
+    private void UpdatePanelFade()
     {
-        if (panelContainer != null && !panelContainer.activeSelf)
+        if (panelContainer == null || canvasGroup == null)
         {
-            panelContainer.SetActive(true);
+            return;
         }
 
+        float targetAlpha = 0f;
+        if (isVisible)
+        {
+            targetAlpha = 1f;
+            if (!panelContainer.activeSelf)
+            {
+                panelContainer.SetActive(true);
+            }
+        }
+
+        canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, targetAlpha, fadeSpeed * Time.deltaTime);
+
+        if (!isVisible && canvasGroup.alpha <= 0.01f)
+        {
+            canvasGroup.alpha = 0f;
+            if (panelContainer.activeSelf)
+            {
+                panelContainer.SetActive(false);
+            }
+        }
+    }
+
+    private void UpdateChecklistContent(BoxContainer box)
+    {
         string stampContent = box.StampContent.ToString().Trim();
         OrderData matchedOrder = FindMatchingOrder(stampContent);
 
@@ -149,13 +218,5 @@ public class BoxChecklistUI : MonoBehaviour
             }
         }
         return null;
-    }
-
-    private void HidePanel()
-    {
-        if (panelContainer != null && panelContainer.activeSelf)
-        {
-            panelContainer.SetActive(false);
-        }
     }
 }

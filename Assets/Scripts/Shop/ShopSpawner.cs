@@ -1,5 +1,4 @@
 using Fusion;
-using Photon;
 using UnityEngine;
 
 public class ShopSpawner : NetworkBehaviour
@@ -26,11 +25,12 @@ public class ShopSpawner : NetworkBehaviour
         if (index < 0 || index >= entries.Length)
         {
             return;
-        } 
+        }
+
         ShopEntry entry = entries[index];
         if (EconomyManager.Instance.TrySpend(entry.price))
         {
             Runner.Spawn(entry.prefab, entry.spawnPoint.position, entry.spawnPoint.rotation);
-        } 
+        }
     }
 }
