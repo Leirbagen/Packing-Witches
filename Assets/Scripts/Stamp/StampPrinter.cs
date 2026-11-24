@@ -5,6 +5,7 @@ public class StampPrinter : NetworkBehaviour
 {
     [SerializeField] private NetworkPrefabRef stampPrefab;
     [SerializeField] private Transform printPoint;
+    [SerializeField] private StampRoll roll;
 
     public void RequestPrint(string content)
     {
@@ -25,6 +26,10 @@ public class StampPrinter : NetworkBehaviour
             return;
         }
         if (printPoint == null || !stampPrefab.IsValid)
+        {
+            return;
+        }
+        if(!roll.TryConsume())
         {
             return;
         }
