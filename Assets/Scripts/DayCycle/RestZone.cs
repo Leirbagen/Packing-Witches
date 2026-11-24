@@ -1,5 +1,4 @@
 using Fusion;
-using System.Linq;
 using UnityEngine;
 
 public class RestZone : NetworkBehaviour, IInteractable
@@ -21,12 +20,13 @@ public class RestZone : NetworkBehaviour, IInteractable
             return "Rest Zone\n<color=#FFA500>Cannot rest during the shift</color>";
         }
 
+        int totalPlayers = GetActivePlayerCount();
         if (RestingPlayers.Contains(Runner.LocalPlayer))
         {
-            return $"Press [X] to cancel resting ({RestingPlayers.Count}/{Runner.ActivePlayers.Count()} ready)";
+            return $"Press [X] to cancel resting ({RestingPlayers.Count}/{totalPlayers} ready)";
         }
 
-        return $"Press [X] to rest and end the day ({RestingPlayers.Count}/{Runner.ActivePlayers.Count()} ready)";
+        return $"Press [X] to rest and end the day ({RestingPlayers.Count}/{totalPlayers} ready)";
     }
 
     public void OnInteract(PlayerRef interactor)
@@ -60,18 +60,22 @@ public class RestZone : NetworkBehaviour, IInteractable
 
     private void CheckAllPlayersResting()
     {
-        int activePlayersCount = 0;
-        foreach (var player in Runner.ActivePlayers)
-        {
-            activePlayersCount++;
-        }
-
-        if (RestingPlayers.Count >= activePlayersCount)
+        if (RestingPlayers.Count >= GetActivePlayerCount())
         {
             RPC_ShowRestMessage("<color=#44FF44>All players resting! Good morning...</color>");
             DayManager.Instance.ChangePhase(DayPhase.Morning);
             RestingPlayers.Clear();
         }
+    }
+
+    private int GetActivePlayerCount()
+    {
+        int count = 0;
+        foreach (PlayerRef player in Runner.ActivePlayers)
+        {
+            count++;
+        }
+        return count;
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]

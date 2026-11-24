@@ -113,23 +113,7 @@ public class SupplierManager : NetworkBehaviour
 
         if (Object != null && Object.HasStateAuthority && expressQueue.Count > 0)
         {
-            List<SupplierEntry> batch = new List<SupplierEntry>();
-
-            foreach (SupplierEntry entry in expressQueue)
-            {
-                batch.Add(entry);
-                if (batch.Count >= maxItemsPerBox)
-                {
-                    SpawnBoxWithItems(batch);
-                    batch.Clear();
-                }
-            }
-
-            if (batch.Count > 0)
-            {
-                SpawnBoxWithItems(batch);
-            }
-
+            SpawnBatchedBoxes(expressQueue);
             RPC_BroadcastDelivery($"{expressQueue.Count} items", true);
             expressQueue.Clear();
             expressCoroutine = null;
@@ -170,28 +154,37 @@ public class SupplierManager : NetworkBehaviour
 
         RPC_BroadcastDelivery($"{PendingOrders.Count} items", false);
 
-        List<SupplierEntry> currentBatch = new List<SupplierEntry>();
-
+        List<SupplierEntry> itemsToDeliver = new List<SupplierEntry>();
         foreach (int index in PendingOrders)
         {
             if (index >= 0 && index < supplierCatalog.Length)
             {
-                currentBatch.Add(supplierCatalog[index]);
-
-                if (currentBatch.Count >= maxItemsPerBox)
-                {
-                    SpawnBoxWithItems(currentBatch);
-                    currentBatch.Clear();
-                }
+                itemsToDeliver.Add(supplierCatalog[index]);
             }
         }
 
-        if (currentBatch.Count > 0)
+        SpawnBatchedBoxes(itemsToDeliver);
+        PendingOrders.Clear();
+    }
+
+    private void SpawnBatchedBoxes(List<SupplierEntry> allItems)
+    {
+        List<SupplierEntry> batch = new List<SupplierEntry>();
+
+        foreach (SupplierEntry entry in allItems)
         {
-            SpawnBoxWithItems(currentBatch);
+            batch.Add(entry);
+            if (batch.Count >= maxItemsPerBox)
+            {
+                SpawnBoxWithItems(batch);
+                batch.Clear();
+            }
         }
 
-        PendingOrders.Clear();
+        if (batch.Count > 0)
+        {
+            SpawnBoxWithItems(batch);
+        }
     }
 
     private void SpawnBoxWithItems(List<SupplierEntry> items)

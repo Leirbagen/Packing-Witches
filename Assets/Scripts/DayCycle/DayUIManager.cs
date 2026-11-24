@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using Fusion;
 
 public class DayUIManager : MonoBehaviour
 {
@@ -8,7 +7,10 @@ public class DayUIManager : MonoBehaviour
 
     private void Update()
     {
-        if (DayManager.Instance == null || !DayManager.Instance.Object.IsValid) return;
+        if (DayManager.Instance == null || !DayManager.Instance.Object.IsValid)
+        {
+            return;
+        }
 
         DayPhase currentPhase = DayManager.Instance.CurrentPhase;
 
@@ -26,7 +28,16 @@ public class DayUIManager : MonoBehaviour
                 int seconds = Mathf.FloorToInt(remainingTime.Value % 60f);
 
                 statusText.text = $"ACTIVE TURN: \n{minutes:00}:{seconds:00}";
-                statusText.color = remainingTime.Value < 30f ? Color.red : Color.yellow; // Se pone rojo a los 30s
+
+                // Turn red when under 30 seconds
+                if (remainingTime.Value < 30f)
+                {
+                    statusText.color = Color.red;
+                }
+                else
+                {
+                    statusText.color = Color.yellow;
+                }
             }
         }
         else if (currentPhase == DayPhase.Night)
