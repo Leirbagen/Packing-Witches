@@ -1,9 +1,11 @@
 using Fusion;
+using TMPro;
 using UnityEngine;
 
 public class ShopTerminal : MonoBehaviour, IInteractable
 {
     [SerializeField] private GameObject shopPanel;
+    [SerializeField] private TextMeshProUGUI roomCodeText;
     public static bool IsOpen { get; private set; }
 
     private void Start()
@@ -54,12 +56,15 @@ public class ShopTerminal : MonoBehaviour, IInteractable
     {
         if (IsOpen)
         {
-            Close();
+            IsOpen = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
     }
 
     private void ToggleRoomCode(bool show)
     {
+        /*
         GameObject roomCodeObj = GameObject.Find("RoomCodeText");
 
         if (roomCodeObj != null)
@@ -70,5 +75,7 @@ public class ShopTerminal : MonoBehaviour, IInteractable
                 textComp.enabled = show;
             }
         }
+        */
+        RoomCodeUI.SetVisible(show);
     }
 }

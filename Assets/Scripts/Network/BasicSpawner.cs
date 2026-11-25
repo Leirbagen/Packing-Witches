@@ -173,7 +173,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
         {
             GameMode = mode,
             SessionName = roomCode,
-            Scene = scene,
+            Scene = sceneInfo, // instead of scene
             SessionProperties = sessionProps,
             SceneManager = runnerObj.AddComponent<NetworkSceneManagerDefault>(),
             PlayerCount = 4,
@@ -185,6 +185,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
             Debug.LogWarning($"Couldnt connect to:  '{roomCode}'. Reason: {result.ShutdownReason}");
             if (runnerObj != null) Destroy(runnerObj);
             _runner = null;
+            return;
         }
         InputController.Instance.ChangeGameMode(InputMode.Gameplay);
     }
