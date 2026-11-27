@@ -6,7 +6,7 @@ using System.Linq;
 public class CraftingTable : NetworkBehaviour, IInteractable
 {
     [Header("Database")]
-    public CraftingRecipe[] availableRecipes; 
+    public CraftingRecipe[] availableRecipes;
 
     [Header("Crafting Settings")]
     public string stationName = "Crafting Station";
@@ -20,8 +20,20 @@ public class CraftingTable : NetworkBehaviour, IInteractable
 
     [Networked] private NetworkPrefabRef currentResultPrefab { get; set; }
 
+    private MachineBreakdown breakdown;
+
+    private void Awake()
+    {
+        breakdown = GetComponent<MachineBreakdown>();
+    }
+
     public string GetInteractionPrompt()
     {
+        if (breakdown != null && breakdown.IsBroken)
+        {
+            return breakdown.GetBrokenPrompt();
+        }
+
         if (IsProcessing)
         {
             float time = ProcessTimer.RemainingTime(Runner) ?? 0f;
@@ -32,7 +44,10 @@ public class CraftingTable : NetworkBehaviour, IInteractable
         {
             List<CraftingRecipe> possible = GetPossibleRecipes();
 
-            if (possible.Count == 0) return "<color=#FF4444>Invalid combination.</color>";
+            if (possible.Count == 0)
+            {
+                return "<color=#FF4444>Invalid combination.</color>";
+            }
 
             foreach (CraftingRecipe p in possible)
             {
@@ -51,19 +66,39 @@ public class CraftingTable : NetworkBehaviour, IInteractable
 
     public void OnInteract(PlayerRef interactor)
     {
-        if (IsProcessing) return;
+        if (breakdown != null && breakdown.IsBroken)
+        {
+            return;
+        }
+
+        if (IsProcessing)
+        {
+            return;
+        }
+
         RPC_InteractWithTable(interactor);
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     private void RPC_InteractWithTable(PlayerRef interactor)
     {
-        if (IsProcessing) return;
+        if (breakdown != null && breakdown.IsBroken)
+        {
+            return;
+        }
 
-        PlayerGrab playerGrab = FindObjectsOfType<PlayerGrab>()
+        if (IsProcessing)
+        {
+            return;
+        }
+
+        PlayerGrab playerGrab = FindObjectsByType<PlayerGrab>(FindObjectsSortMode.None)
             .FirstOrDefault(p => p.Object.InputAuthority == interactor);
 
-        if (playerGrab == null) return;
+        if (playerGrab == null)
+        {
+            return;
+        }
 
         if (playerGrab.IsHolding && playerGrab.HeldObject != null)
         {
@@ -79,16 +114,20 @@ public class CraftingTable : NetworkBehaviour, IInteractable
                         if (reqIngredient.id == heldItem.productData.id)
                         {
                             isIngredientValid = true;
-                            break; 
+                            break;
                         }
                     }
-                    if (isIngredientValid) break;
+
+                    if (isIngredientValid)
+                    {
+                        break;
+                    }
                 }
 
                 if (!isIngredientValid)
                 {
-                    RPC_BroadcastMessage($"<color=#FFA500>[Crafting] this product does not have a recipe</color>");
-                    return; 
+                    RPC_BroadcastMessage("<color=#FFA500>[Crafting] This product does not have a recipe</color>");
+                    return;
                 }
 
                 if (PlacedIngredientIDs.Count < 4)
@@ -110,7 +149,10 @@ public class CraftingTable : NetworkBehaviour, IInteractable
     private List<CraftingRecipe> GetPossibleRecipes()
     {
         List<CraftingRecipe> possibleRecipes = new List<CraftingRecipe>();
-        if (PlacedIngredientIDs.Count == 0) return possibleRecipes;
+        if (PlacedIngredientIDs.Count == 0)
+        {
+            return possibleRecipes;
+        }
 
         foreach (CraftingRecipe recipe in availableRecipes)
         {
@@ -124,33 +166,42 @@ public class CraftingTable : NetworkBehaviour, IInteractable
 
     private bool CanFormRecipe(CraftingRecipe recipe)
     {
-        if (PlacedIngredientIDs.Count > recipe.requiredIngredients.Length) return false;
+        if (PlacedIngredientIDs.Count > recipe.requiredIngredients.Length)
+        {
+            return false;
+        }
 
         List<int> requirements = new List<int>();
-        foreach (ProductData req in recipe.requiredIngredients) requirements.Add(req.id);
+        foreach (ProductData req in recipe.requiredIngredients)
+        {
+            requirements.Add(req.id);
+        }
 
         foreach (int tableItemID in PlacedIngredientIDs)
         {
             if (requirements.Contains(tableItemID))
             {
-                requirements.Remove(tableItemID); 
+                requirements.Remove(tableItemID);
             }
             else
             {
-                return false; 
+                return false;
             }
         }
         return true;
     }
+
     private void TryCraft()
     {
-        if (PlacedIngredientIDs.Count == 0) return;
+        if (PlacedIngredientIDs.Count == 0)
+        {
+            return;
+        }
 
         foreach (CraftingRecipe recipe in availableRecipes)
         {
             if (MatchRecipe(recipe))
             {
-
                 IsProcessing = true;
                 ProcessTimer = TickTimer.CreateFromSeconds(Runner, recipe.processTime);
                 currentResultPrefab = recipe.resultPrefab;
@@ -165,33 +216,47 @@ public class CraftingTable : NetworkBehaviour, IInteractable
 
     private bool MatchRecipe(CraftingRecipe recipe)
     {
-        if (recipe.requiredIngredients.Length != PlacedIngredientIDs.Count) return false;
+        if (recipe.requiredIngredients.Length != PlacedIngredientIDs.Count)
+        {
+            return false;
+        }
 
         List<int> tableItems = new List<int>();
-        foreach (int id in PlacedIngredientIDs) tableItems.Add(id);
+        foreach (int id in PlacedIngredientIDs)
+        {
+            tableItems.Add(id);
+        }
 
         foreach (ProductData reqIngredient in recipe.requiredIngredients)
         {
             if (tableItems.Contains(reqIngredient.id))
             {
-                tableItems.Remove(reqIngredient.id); 
+                tableItems.Remove(reqIngredient.id);
             }
             else
             {
-                return false; 
+                return false;
             }
         }
-        return true; 
+        return true;
     }
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority)
+        {
+            return;
+        }
+
+        if (breakdown != null && breakdown.IsBroken)
+        {
+            return;
+        }
 
         if (IsProcessing && ProcessTimer.Expired(Runner))
         {
             IsProcessing = false;
-            PlacedIngredientIDs.Clear(); 
+            PlacedIngredientIDs.Clear();
 
             if (currentResultPrefab.IsValid)
             {
