@@ -4,12 +4,10 @@ using UnityEngine;
 
 public class MachineFailureManager : NetworkBehaviour
 {
-    [Header("Failure Timing (Seconds)")]
     public float minTimeBetweenFailures = 25f;
     public float maxTimeBetweenFailures = 50f;
     public int maxSimultaneousBroken = 1;
 
-    [Header("Machines")]
     public List<MachineBreakdown> machines = new List<MachineBreakdown>();
 
     [Networked]
@@ -34,12 +32,11 @@ public class MachineFailureManager : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority || DayManager.Instance == null)
+        if (!HasStateAuthority || DayManager.Instance == null || !DayManager.Instance.Object.IsValid)
         {
             return;
         }
 
-        // Only trigger random breakdowns during the Active Shift
         if (DayManager.Instance.CurrentPhase != DayPhase.ActiveShift)
         {
             nextFailureTimer = TickTimer.None;
@@ -68,11 +65,11 @@ public class MachineFailureManager : NetworkBehaviour
     private void TryBreakRandomMachine()
     {
         int currentlyBroken = 0;
-        List<MachineBreakdown> workingMachines = new List<MachineBreakdown>();
+        List<MachineBreakdown> breakableMachines = new List<MachineBreakdown>();
 
         foreach (MachineBreakdown machine in machines)
         {
-            if (machine == null)
+            if (machine == null || machine.Object == null || !machine.Object.IsValid)
             {
                 continue;
             }
@@ -81,18 +78,23 @@ public class MachineFailureManager : NetworkBehaviour
             {
                 currentlyBroken++;
             }
-            else
+            else if (machine.GetFailureChance() > 0f)
             {
-                workingMachines.Add(machine);
+                breakableMachines.Add(machine);
             }
         }
 
-        if (currentlyBroken >= maxSimultaneousBroken || workingMachines.Count == 0)
+        if (currentlyBroken >= maxSimultaneousBroken || breakableMachines.Count == 0)
         {
             return;
         }
 
-        int randomIndex = Random.Range(0, workingMachines.Count);
-        workingMachines[randomIndex].BreakMachine();
+        int randomIndex = Random.Range(0, breakableMachines.Count);
+        MachineBreakdown selected = breakableMachines[randomIndex];
+
+        if (Random.value <= selected.GetFailureChance())
+        {
+            selected.BreakMachine();
+        }
     }
 }

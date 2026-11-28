@@ -5825,6 +5825,7 @@ GameObject:
   - component: {fileID: 531863546}
   - component: {fileID: 531863545}
   - component: {fileID: 531863544}
+  - component: {fileID: 531863550}
   - component: {fileID: 531863549}
   - component: {fileID: 531863543}
   m_Layer: 7
@@ -5853,6 +5854,7 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 531863544}
+  - {fileID: 531863550}
   - {fileID: 531863549}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &531863544
@@ -5992,6 +5994,31 @@ MonoBehaviour:
   worldPrompt: {fileID: 537459995}
   _IsBroken:
     RawValue: 0
+--- !u!114 &531863550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531863542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06bbff363af448746aac4fb630089164, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MachineUpgrade
+  level2Cost: 10
+  level3Cost: 20
+  level1TimeMultiplier: 1
+  level2TimeMultiplier: 0.65
+  level3TimeMultiplier: 0.4
+  level1FailureChance: 1
+  level2FailureChance: 0.44
+  level3FailureChance: 0
+  upgradeKey: 101
+  holdDuration: 1.5
+  upgradeDistance: 3.5
+  worldPrompt: {fileID: 0}
+  _CurrentLevel: 0
 --- !u!1001 &537459993
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15670,8 +15697,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 112bc6e61b08fd8449be09343185460d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MachineFailureManager
-  minTimeBetweenFailures: 30
-  maxTimeBetweenFailures: 60
+  minTimeBetweenFailures: 15
+  maxTimeBetweenFailures: 30
   maxSimultaneousBroken: 2
   machines: []
 --- !u!4 &1284339877
@@ -18041,6 +18068,7 @@ GameObject:
   - component: {fileID: 1525273241}
   - component: {fileID: 1525273240}
   - component: {fileID: 1525273239}
+  - component: {fileID: 1525273245}
   - component: {fileID: 1525273244}
   - component: {fileID: 1525273238}
   m_Layer: 7
@@ -18069,6 +18097,7 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 1525273239}
+  - {fileID: 1525273245}
   - {fileID: 1525273244}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &1525273239
@@ -18209,6 +18238,31 @@ MonoBehaviour:
   worldPrompt: {fileID: 2085603424}
   _IsBroken:
     RawValue: 0
+--- !u!114 &1525273245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525273237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06bbff363af448746aac4fb630089164, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MachineUpgrade
+  level2Cost: 10
+  level3Cost: 20
+  level1TimeMultiplier: 1
+  level2TimeMultiplier: 0.65
+  level3TimeMultiplier: 0.4
+  level1FailureChance: 1
+  level2FailureChance: 0.35
+  level3FailureChance: 0
+  upgradeKey: 101
+  holdDuration: 1.5
+  upgradeDistance: 3.5
+  worldPrompt: {fileID: 0}
+  _CurrentLevel: 0
 --- !u!1 &1541109136
 GameObject:
   m_ObjectHideFlags: 0

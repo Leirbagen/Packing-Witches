@@ -1,39 +1,52 @@
 ﻿using Fusion;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
 
 public class RecordingCamera : NetworkBehaviour, IInteractable
 {
     public ProductDisplayZone displayZone;
     public float recordingDuration = 5f;
 
-    [Header("Cinematics")]
     public Camera tripodCamera;
-    private Camera storedPlayerCamera;
-
-    [Header("UI Settings")]
     public GameObject playerHUD;
     public GameObject recCanvas;
     public TextMeshProUGUI timerText;
     public WorldPromptUI worldPrompt;
+
     [Networked] public NetworkBool IsRecording { get; set; }
     [Networked] public TickTimer RecordingTimer { get; set; }
     [Networked] public PlayerRef CurrentCameraman { get; set; }
 
+    private Camera storedPlayerCamera;
+
+    private void Awake()
+    {
+        if (worldPrompt == null)
+        {
+            worldPrompt = GetComponentInChildren<WorldPromptUI>();
+        }
+    }
+
     public string GetInteractionPrompt()
     {
+        if (Object == null || !Object.IsValid)
+        {
+            return string.Empty;
+        }
+
         if (IsRecording)
         {
             float time = RecordingTimer.RemainingTime(Runner) ?? 0f;
             return $"Recording... ({time:F0}s)";
         }
 
-        PackableItem item = displayZone.GetDisplayedItem();
-
-        if (item)
+        if (displayZone != null)
         {
-            return $"Press [F] to record promo for {item.productData.productName}";
+            PackableItem item = displayZone.GetDisplayedItem();
+            if (item != null && item.productData != null)
+            {
+                return $"Press [F] to record promo for {item.productData.productName}";
+            }
         }
 
         return "Place a product on the recording table first";
@@ -41,14 +54,13 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
 
     public void OnInteract(PlayerRef interactor)
     {
-        if (IsRecording)
+        if (Object == null || !Object.IsValid || IsRecording || displayZone == null)
         {
             return;
         }
 
         PackableItem item = displayZone.GetDisplayedItem();
-
-        if (item)
+        if (item != null)
         {
             RPC_StartRecording(interactor);
         }
@@ -57,6 +69,11 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     private void RPC_StartRecording(PlayerRef interactor)
     {
+        if (IsRecording)
+        {
+            return;
+        }
+
         IsRecording = true;
         CurrentCameraman = interactor;
         RecordingTimer = TickTimer.CreateFromSeconds(Runner, recordingDuration);
@@ -80,31 +97,42 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
 
     private void Update()
     {
-        if (IsRecording && recCanvas.activeSelf)
+        if (Object == null || !Object.IsValid)
         {
-            float time = RecordingTimer.RemainingTime(Runner) ?? 0f;
-            timerText.text = $"REC 00:0{time:F0}";
+            return;
+        }
+
+        if (IsRecording && recCanvas != null && recCanvas.activeSelf && timerText != null)
+        {
+            int seconds = Mathf.CeilToInt(RecordingTimer.RemainingTime(Runner) ?? 0f);
+            timerText.text = $"REC 00:{seconds:00}";
         }
     }
 
     private void FinishRecording()
     {
-        EconomyManager.Instance.AddRevenue(10);
+        if (EconomyManager.Instance != null)
+        {
+            EconomyManager.Instance.AddRevenue(10);
+        }
 
         RPC_BroadcastRecordingState(false, CurrentCameraman);
         CurrentCameraman = PlayerRef.None;
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    private void RPC_BroadcastRecordingState(bool isStarting, PlayerRef interactor)
+    private void RPC_BroadcastRecordingState(NetworkBool isStarting, PlayerRef interactor)
     {
-        if (isStarting)
+        if (worldPrompt != null)
         {
-            worldPrompt.ShowTemporaryMessage("<color=#FF00FF>Camera is rolling!</color>");
-        }
-        else
-        {
-            worldPrompt.ShowTemporaryMessage("<color=#44FF44>Video uploaded! +$10</color>");
+            if (isStarting)
+            {
+                worldPrompt.ShowTemporaryMessage("<color=#FF00FF>Camera is rolling!</color>");
+            }
+            else
+            {
+                worldPrompt.ShowTemporaryMessage("<color=#44FF44>Video uploaded! +$10</color>");
+            }
         }
 
         if (interactor == Runner.LocalPlayer)
@@ -112,21 +140,57 @@ public class RecordingCamera : NetworkBehaviour, IInteractable
             if (isStarting)
             {
                 storedPlayerCamera = Camera.main;
-                storedPlayerCamera.enabled = false;
-                tripodCamera.gameObject.SetActive(true);
+                if (storedPlayerCamera != null)
+                {
+                    storedPlayerCamera.enabled = false;
+                }
 
-                playerHUD.SetActive(false);
-                recCanvas.SetActive(true);
-                worldPrompt.gameObject.SetActive(false);
+                if (tripodCamera != null)
+                {
+                    tripodCamera.gameObject.SetActive(true);
+                }
+
+                if (playerHUD != null)
+                {
+                    playerHUD.SetActive(false);
+                }
+
+                if (recCanvas != null)
+                {
+                    recCanvas.SetActive(true);
+                }
+
+                if (worldPrompt != null)
+                {
+                    worldPrompt.gameObject.SetActive(false);
+                }
             }
             else
             {
-                tripodCamera.gameObject.SetActive(false);
-                storedPlayerCamera.enabled = true;
+                if (tripodCamera != null)
+                {
+                    tripodCamera.gameObject.SetActive(false);
+                }
 
-                playerHUD.SetActive(true);
-                recCanvas.SetActive(false);
-                worldPrompt.gameObject.SetActive(true);
+                if (storedPlayerCamera != null)
+                {
+                    storedPlayerCamera.enabled = true;
+                }
+
+                if (playerHUD != null)
+                {
+                    playerHUD.SetActive(true);
+                }
+
+                if (recCanvas != null)
+                {
+                    recCanvas.SetActive(false);
+                }
+
+                if (worldPrompt != null)
+                {
+                    worldPrompt.gameObject.SetActive(true);
+                }
             }
         }
     }

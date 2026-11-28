@@ -1,10 +1,8 @@
 using Fusion;
-
 using UnityEngine;
 
 public class CameraController : NetworkBehaviour
 {
-    [SerializeField] private float sensibility = 200f;
     public Transform playerBody;
 
     public override void Spawned()
@@ -24,6 +22,7 @@ public class CameraController : NetworkBehaviour
             {
                 playerBody.rotation = Quaternion.Euler(0f, data.look.x, 0f);
             }
+
             transform.localRotation = Quaternion.Euler(data.look.y, 0f, 0f);
         }
     }

@@ -3,19 +3,30 @@ using UnityEngine;
 
 public class PlayerInteractor : NetworkBehaviour
 {
-    [Header("Interaction Settings")]
     public Transform cameraTransform;
     public float interactionDistance = 3f;
     public LayerMask interactableLayer;
+
     private IInteractable currentInteractable;
+    private PlayerGrab playerGrab;
+
+    private void Awake()
+    {
+        playerGrab = GetComponentInParent<PlayerGrab>();
+        if (playerGrab == null)
+        {
+            playerGrab = GetComponentInChildren<PlayerGrab>();
+        }
+    }
 
     private void Update()
     {
-        if (!HasStateAuthority && !HasInputAuthority)
+        if (Object == null || !Object.IsValid || !HasInputAuthority)
         {
             return;
         }
-        if (ShopTerminal.IsOpen)
+
+        if (ShopTerminal.IsOpen || InputController.Instance == null || cameraTransform == null)
         {
             return;
         }
@@ -24,12 +35,6 @@ public class PlayerInteractor : NetworkBehaviour
         bool packPressed = InputController.Instance.GetButtonDown(InputController.Input.PACK);
         bool restPressed = InputController.Instance.GetButtonDown(InputController.Input.REST);
 
-        PlayerGrab playerGrab = GetComponentInParent<PlayerGrab>();
-        if (playerGrab == null)
-        {
-            playerGrab = GetComponentInChildren<PlayerGrab>();
-        }
-
         if (grabPressed && playerGrab != null && playerGrab.IsHolding)
         {
             playerGrab.RequestDrop();
@@ -37,15 +42,13 @@ public class PlayerInteractor : NetworkBehaviour
         }
 
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-        Debug.DrawRay(cameraTransform.position, cameraTransform.forward * interactionDistance, Color.red);
-
         RaycastHit[] hits = Physics.RaycastAll(ray, interactionDistance, interactableLayer);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
         RaycastHit validHit = default;
         bool hasValidHit = false;
 
-        foreach (var hit in hits)
+        foreach (RaycastHit hit in hits)
         {
             if (playerGrab != null && playerGrab.IsHolding && playerGrab.HeldObject != null)
             {
@@ -75,27 +78,25 @@ public class PlayerInteractor : NetworkBehaviour
                 string prompt = currentInteractable.GetInteractionPrompt();
                 if (!string.IsNullOrEmpty(prompt))
                 {
-                    Debug.Log($"<color=green>Looking at : {validHit.collider.name}!</color> - " + prompt);
-
-                    bool isBoxContainer = currentInteractable is BoxContainer;
                     bool isRestZone = currentInteractable is RestZone;
-                    bool isCraftingTable = currentInteractable is CraftingTable;
-                    bool isCat = currentInteractable is CatController;
-                    bool isCatBowl = currentInteractable is CatBowl;
-                    bool isCamera = currentInteractable is RecordingCamera;
-                    bool isPrinter = currentInteractable is StampPrinter;
+                    bool usesPackKey = currentInteractable is BoxContainer
+                        || currentInteractable is CraftingTable
+                        || currentInteractable is CatController
+                        || currentInteractable is CatBowl
+                        || currentInteractable is RecordingCamera
+                        || currentInteractable is StampPrinter;
 
                     if (isRestZone && restPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
                     }
-                    else if ((isBoxContainer || isCraftingTable || isCat || isCatBowl || isCamera || isPrinter) && packPressed)
+                    else if (usesPackKey && packPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
                     }
-                    else if (!isBoxContainer && !isRestZone && !isCraftingTable && !isCat && !isCatBowl && !isCamera && !isPrinter && grabPressed)
+                    else if (!isRestZone && !usesPackKey && grabPressed)
                     {
                         currentInteractable.OnInteract(Runner.LocalPlayer);
                         return;
@@ -107,12 +108,9 @@ public class PlayerInteractor : NetworkBehaviour
                 currentInteractable = null;
             }
 
-            if (playerGrab != null && !playerGrab.IsHolding && grabbable != null)
+            if (playerGrab != null && !playerGrab.IsHolding && grabbable != null && grabPressed)
             {
-                if (grabPressed)
-                {
-                    playerGrab.RequestGrab(grabbable);
-                }
+                playerGrab.RequestGrab(grabbable);
             }
         }
         else
