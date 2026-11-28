@@ -15,9 +15,12 @@ public class MachineBreakdown : NetworkBehaviour
     public NetworkBool IsBroken { get; set; }
 
     private float localRepairTimer = 0f;
+    private MachineUpgrade upgrade;
 
     private void Awake()
     {
+        upgrade = GetComponent<MachineUpgrade>();
+
         if (worldPrompt == null)
         {
             worldPrompt = GetComponentInChildren<WorldPromptUI>();
@@ -37,6 +40,16 @@ public class MachineBreakdown : NetworkBehaviour
         }
 
         IsBroken = true;
+    }
+
+    public float GetFailureChance()
+    {
+        if (upgrade != null && upgrade.Object != null && upgrade.Object.IsValid)
+        {
+            return upgrade.GetFailureChance();
+        }
+
+        return 1f;
     }
 
     private void OnBrokenStateChanged()

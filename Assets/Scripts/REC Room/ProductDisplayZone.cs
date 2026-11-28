@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class ProductDisplayZone : NetworkBehaviour
 {
-    [Header("Display Area")]
     public Vector3 zoneExtents = new Vector3(0.5f, 0.5f, 0.5f);
     public LayerMask itemLayer;
 
@@ -11,9 +10,10 @@ public class ProductDisplayZone : NetworkBehaviour
     {
         Collider[] hits = Physics.OverlapBox(transform.position, zoneExtents, transform.rotation, itemLayer);
 
-        foreach (var hit in hits)
+        foreach (Collider hit in hits)
         {
-            if (hit.TryGetComponent(out PackableItem item)/* && !item.IsPacked*/)
+            PackableItem item = hit.GetComponentInParent<PackableItem>();
+            if (item != null)
             {
                 if (item.TryGetComponent(out GrabbableObject grabbable) && !grabbable.IsGrabbed)
                 {

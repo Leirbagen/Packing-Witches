@@ -1,9 +1,10 @@
-using UnityEngine;
 using Fusion;
+using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {
     private NetworkCharacterController characterController;
+
     [SerializeField] private float velocity = 5f;
     [SerializeField] private float runVelocity = 9f;
     [SerializeField] private float maxStamina = 100f;
@@ -11,18 +12,17 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float staminaRegenPerSecond = 15f;
     [SerializeField] private float regenDelay = 1.5f;
     [SerializeField] private float exhaustedRecover = 25f;
-    [Networked] private bool wasGrounded { get; set; }
+
     [Networked] public float Stamina { get; set; }
     [Networked] public NetworkBool IsExhausted { get; set; }
     [Networked] private TickTimer regenTimer { get; set; }
     [Networked] public NetworkBool IsSprinting { get; set; }
-    public float StaminaNormalized => Stamina / maxStamina;
+    [Networked] public float NetworkYaw { get; set; }
+
+    public float StaminaNormalized => Stamina / Mathf.Max(1f, maxStamina);
     public AudioSource playerAudio;
     public AudioClip jumpSound;
-    public AudioClip landSound;
     public GameObject cameraLook;
-    [Networked] public float NetworkYaw { get; set; }
-    private float pendingJumpForce = 0f;
 
     private void Awake()
     {
@@ -35,36 +35,29 @@ public class PlayerController : NetworkBehaviour
     {
         base.Spawned();
 
-        Camera camComponent = cameraLook.GetComponent<Camera>();
-        AudioListener audioListener = cameraLook.GetComponent<AudioListener>();
+        if (cameraLook != null)
+        {
+            Camera camComponent = cameraLook.GetComponent<Camera>();
+            AudioListener audioListener = cameraLook.GetComponent<AudioListener>();
 
-        if (HasInputAuthority)
-        {
             if (camComponent != null)
             {
-                camComponent.enabled = true;
+                camComponent.enabled = HasInputAuthority;
             }
+
             if (audioListener != null)
             {
-                audioListener.enabled = true;
+                audioListener.enabled = HasInputAuthority;
             }
-            cameraLook.tag = "MainCamera";
-        }
-        else
-        {
-            if (camComponent != null)
+
+            if (HasInputAuthority)
             {
-                camComponent.enabled = false;
-            }
-            if (audioListener != null)
-            {
-                audioListener.enabled = false;
+                cameraLook.tag = "MainCamera";
             }
         }
 
-        if (Object.HasStateAuthority)
+        if (HasStateAuthority)
         {
-            wasGrounded = true;
             Stamina = maxStamina;
         }
     }
@@ -72,7 +65,8 @@ public class PlayerController : NetworkBehaviour
     public override void FixedUpdateNetwork()
     {
         base.FixedUpdateNetwork();
-        if (!Object.HasStateAuthority && !Object.HasInputAuthority)
+
+        if (!HasStateAuthority && !HasInputAuthority)
         {
             return;
         }
@@ -80,7 +74,6 @@ public class PlayerController : NetworkBehaviour
         Vector3 moveDirection = Vector3.zero;
         bool jumpPressed = false;
         bool runPressed = false;
-        bool isRunning = false;
 
         if (GetInput(out NetworkInputData data))
         {
@@ -94,38 +87,9 @@ public class PlayerController : NetworkBehaviour
             runPressed = data.buttons.IsSet(InputButton.run);
         }
 
-        if (pendingJumpForce > 0f)
-        {
-            if (characterController.Grounded)
-            {
-                characterController.Jump();
-            }
-            characterController.Velocity = new Vector3(characterController.Velocity.x, pendingJumpForce, characterController.Velocity.z);
-            pendingJumpForce = 0f;
-        }
+        bool isRunning = runPressed && moveDirection.sqrMagnitude > 0.01f && !IsExhausted && Stamina > 0f;
 
-        bool wantsToRun = false;
-        if (runPressed == true)
-        {
-            if (moveDirection.sqrMagnitude > 0.01f)
-            {
-                wantsToRun = true;
-            }
-        }
-
-        isRunning = false;
-        if (wantsToRun == true)
-        {
-            if (IsExhausted == false)
-            {
-                if (Stamina > 0f)
-                {
-                    isRunning = true;
-                }
-            }
-        }
-
-        if (isRunning == true)
+        if (isRunning)
         {
             characterController.maxSpeed = runVelocity;
         }
@@ -147,6 +111,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         UpdateStamina(isRunning);
+
         if (HasStateAuthority)
         {
             IsSprinting = isRunning;
@@ -155,17 +120,13 @@ public class PlayerController : NetworkBehaviour
         if (jumpPressed && characterController.Grounded)
         {
             characterController.Jump();
-            if (Runner.IsForward)
+            if (Runner.IsForward && playerAudio != null && jumpSound != null)
             {
-                if (playerAudio != null && jumpSound != null)
-                {
-                    playerAudio.PlayOneShot(jumpSound);
-                }
+                playerAudio.PlayOneShot(jumpSound);
             }
         }
 
         transform.rotation = Quaternion.Euler(0f, NetworkYaw, 0f);
-        wasGrounded = characterController.Grounded;
     }
 
     private void UpdateStamina(bool isRunning)
